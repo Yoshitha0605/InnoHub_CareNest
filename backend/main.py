@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import pandas as pd
 import os
+from fastapi.middleware.cors import CORSMiddleware
 
 # Import the backend prediction wrapper which loads the ai-model module dynamically
 from prediction import predict as ai_predict
@@ -15,6 +16,13 @@ except Exception:
     # fall back to an empty DataFrame with expected columns
     data = pd.DataFrame(columns=['timestamp', 'patient_count', 'beds_available', 'icu_usage', 'staff_count', 'occupancy_rate'])
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 @app.get("/")
 def root():
@@ -22,67 +30,68 @@ def root():
 
 
 @app.get("/hospital-status")
-def hospital_status():
-    # Use only the latest record from the pre-loaded CSV
-    if data is None or data.empty:
-        return {
-            "current_patients": 0,
-            "beds_available": 0,
-            "icu_available": 0,
-            "staff_available": 0,
-            "occupancy_rate": 0.0,
-        }
-
-    latest = data.iloc[-1]
-
-    patient_count = latest.get('patient_count', 0)
-    beds_available = latest.get('beds_available', 0)
-    # CSV uses 'icu_usage' column name; expose it as 'icu_available'
-    icu_available = latest.get('icu_usage', 0)
-    staff_count = latest.get('staff_count', 0)
-
-    try:
-        denom = float(patient_count) + float(beds_available)
-        occupancy = (float(patient_count) / denom) * 100.0 if denom > 0 else 0.0
-    except Exception:
-        occupancy = 0.0
-
+def hospital_status_demo(scenario: str = "normal"):
     return {
-        "current_patients": int(patient_count),
-        "beds_available": int(beds_available),
-        "icu_available": int(icu_available),
-        "staff_available": int(staff_count),
-        "occupancy_rate": round(occupancy, 2),
+        "current_patients": DEMO_DATA[scenario]["current_patients"],
+        "beds_available": DEMO_DATA[scenario]["beds_available"],
+        "icu_available": DEMO_DATA[scenario]["icu_available"],
+        "staff_available": DEMO_DATA[scenario]["staff_available"],
+        "occupancy_rate": DEMO_DATA[scenario]["occupancy_rate"],
     }
 
 
 @app.post("/predict")
-def predict_api():
-    # Use latest CSV row as input to the AI predictor
-    if data is None or data.empty:
-        return {"error": "No data available for prediction"}
-
-    latest = data.iloc[-1]
-
-    input_data = {
-        "patient_count": int(latest.get('patient_count', 0)),
-        "beds_available": int(latest.get('beds_available', 0)),
-        # ai-model expects 'icu_available' key; CSV uses 'icu_usage'
-        "icu_available": int(latest.get('icu_usage', 0)),
-        "staff_count": int(latest.get('staff_count', 0)),
-        "occupancy_rate": float(latest.get('occupancy_rate', 0.0)),
+def predict_demo(scenario: str = "normal"):
+    return {
+        "prediction": DEMO_DATA[scenario]["prediction"],
+        "confidence": DEMO_DATA[scenario]["confidence"],
     }
-
-    try:
-        return ai_predict(input_data)
-    except Exception as e:
-        return {"error": str(e)}
 
 
 @app.get("/alerts")
-def alerts():
+def alerts_demo(scenario: str = "normal"):
     return {
+        "alert_level": DEMO_DATA[scenario]["alert_level"],
+        "message": DEMO_DATA[scenario]["message"],
+        "recommended_action": DEMO_DATA[scenario]["recommended_action"],
+    }
+
+# Controlled demo data
+DEMO_DATA = {
+    "normal": {
+        "current_patients": 50,
+        "beds_available": 100,
+        "icu_available": 20,
+        "staff_available": 50,
+        "occupancy_rate": 33.33,
+        "prediction": "Low Risk",
+        "confidence": "95.00%",
+        "alert_level": "GREEN",
+        "message": "All systems normal",
+        "recommended_action": "No action needed",
+    },
+    "warning": {
+        "current_patients": 120,
+        "beds_available": 80,
+        "icu_available": 10,
+        "staff_available": 40,
+        "occupancy_rate": 60.00,
+        "prediction": "Medium Risk",
+        "confidence": "85.00%",
+        "alert_level": "YELLOW",
+        "message": "Approaching capacity",
+        "recommended_action": "Prepare for surge",
+    },
+    "critical": {
+        "current_patients": 200,
+        "beds_available": 20,
+        "icu_available": 5,
+        "staff_available": 10,
+        "occupancy_rate": 90.91,
+        "prediction": "High Risk",
+        "confidence": "99.00%",
         "alert_level": "RED",
         "message": "Overload risk",
-        "recommended_action": "Expand capacity",
-    }
+        "recommended_action": "Expand capacity immediately",
+    },
+}
