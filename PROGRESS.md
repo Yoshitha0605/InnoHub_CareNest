@@ -5,16 +5,16 @@ It highlights completed functionality, work in progress, and remaining tasks.
 
 ## ✅ Completed
 
-- FastAPI backend fully implemented
-- CSV data integration completed
-- AI model (Random Forest) integrated using `model.pkl`
-- Prediction system working via `/predict` API
-- Hospital status API (`/hospital-status`) working
-- Alerts API (`/alerts`) implemented
-- CORS enabled for frontend-backend communication
-- GitHub repository synchronized between team members
-- Frontend dashboard UI created (React)
-- Dashboard layout includes:
+- FastAPI backend implemented
+- CSV data integration done
+- AI model (Random Forest) integrated
+- `/predict` API working
+- `/hospital-status` API working
+- `/alerts` API implemented
+- CORS enabled
+- GitHub sync between team members completed
+- React frontend UI created
+- Dashboard includes:
   - Hospital status cards
   - Prediction panel
   - Alerts panel
@@ -22,17 +22,17 @@ It highlights completed functionality, work in progress, and remaining tasks.
 
 ## ⚠️ In Progress
 
-- Frontend interactivity (buttons, navigation)
-- Prediction button integration with backend
-- Login functionality
+- Frontend interactivity (buttons not fully functional)
+- Navigation (React Router integration)
+- Prediction button backend connection refinement
+- Login UI (partial)
 - Settings page functionality
-- Routing and navigation improvements
 
 ## ❌ Pending
 
-- Fully functional navigation (React Router)
-- Complete login system (currently mock/partial)
-- Settings backend integration
+- Fully functional navigation
+- Authentication system
+- Complete settings integration
 - UI responsiveness improvements
 - Final demo polish
 

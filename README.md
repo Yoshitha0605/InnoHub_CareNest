@@ -2,7 +2,7 @@
 
 ## Description
 
-A smart healthcare dashboard that predicts patient load, monitors hospital resources, and generates alerts to help hospitals prepare for emergencies.
+CareNest is a smart healthcare dashboard that predicts patient load, monitors hospital resources, and generates alerts to help hospitals prepare for emergencies.
 
 ## Features
 
@@ -14,10 +14,10 @@ A smart healthcare dashboard that predicts patient load, monitors hospital resou
 
 ## Tech Stack
 
-- Frontend: React
+- Frontend: React (Vite)
 - Backend: FastAPI
 - AI Model: Random Forest (Scikit-learn)
-- Data: CSV-based dataset
+- Data: CSV dataset
 
 ## APIs
 
@@ -34,17 +34,13 @@ A smart healthcare dashboard that predicts patient load, monitors hospital resou
 
 ## Setup Instructions
 
-### Backend
+### Backend Setup
 
 ```bash
 cd backend
+pip install -r requirements.txt
 uvicorn main:app --reload --port 8002
 ```
-
-### Notes
-
-- Ensure `requirements.txt` is installed in the `backend/` folder before starting the server.
-- The backend exposes a demo-ready prediction API and hospital monitoring endpoints for the frontend.
 
 ## Project Structure
 
@@ -80,6 +76,4 @@ InnoHub_CareNest/
 └── README.md
 ```
 
-## Contact
-
-Built by the InnoHub team for the hackathon demo.
+**Made with ❤️ by InnoHub for the Hackathon**
