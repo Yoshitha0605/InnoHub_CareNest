@@ -4,6 +4,7 @@ from utils.processing import load_data
 
 router = APIRouter()
 
+<<<<<<< HEAD
 
 @router.get('/hospital-status')
 def hospital_status():
@@ -28,4 +29,14 @@ def hospital_status():
         'icu_available': icu_available,
         'staff_available': staff_available,
         'occupancy_rate': occupancy_rate,
+=======
+@router.get("/hospital-status")
+async def get_hospital_status():
+    mock_data = {
+        "beds_available": 100,
+        "icu_available": 20,
+        "staff_count": 50,
+        "patient_count": 90,
+        "occupancy_rate": 90.0,
+>>>>>>> 5f53575dc0e853d5dc6700a6ff080ee8e4ccf076
     }
