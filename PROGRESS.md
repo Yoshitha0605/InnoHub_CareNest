@@ -1,93 +1,90 @@
 # 🚀 Project Progress Update
 
+This document captures the current status, recent accomplishments, and immediate next steps for the CareNest hackathon project. It retains existing technical details while sharpening the presentation for a demo or investor-style walkthrough.
+
 ## ✅ Completed Work (Backend)
 
-* Designed and implemented backend using FastAPI
-* Created modular structure:
+- Designed and implemented the backend using FastAPI
+- Created a clean, modular structure:
 
-  * `routes/` for API endpoints
-  * `models/` for data handling
-  * `database/` for storage integration
-* Implemented core APIs for:
+  - `routes/` — API endpoints
+  - `models/` — domain and data models
+  - `database/` — storage and connection logic
 
-  * Patient data handling
-  * Resource tracking (beds, ICU, etc.)
-* Backend server successfully tested and running
-* Project structure cleaned and organized (`backend/`)
+- Implemented core APIs for patient data and resource tracking (beds, ICU, staff)
+- Backend server tested and running locally
+- Project structure consolidated under `backend/` for clarity
 
 ---
 
-## 🔄 Current Work (Frontend)
+## 🎨 Frontend Completion
 
-* Building user interface for:
+- Frontend project scaffold and core structure completed (React + Tailwind)
+- Primary UI screens implemented for the demo:
 
-  * Hospital dashboard
-  * Data input (patient/ambulance)
-  * Status display
-* Connecting frontend with backend APIs
-* Working on basic UI layout for demo
+  - Dashboard (operational view)
+  - Data input screens (patient intake, ambulance reporting)
+  - Status and alerts panels
 
----
-
-## ⏳ Pending Work (High Priority)
-
-* Complete frontend-backend API integration
-* Display real-time data from backend
-* Implement basic dashboard (counts, status, alerts)
-* Test complete flow:
-
-  * Input → Processing → Output
+- Premium splash/landing screen implemented to lead into the app
+- Existing visual components (floating cards, charts, animations) preserved and not modified
 
 ---
 
-## ⏳ Pending Work (If Time Permits)
+## 🔄 Current Work (Integration)
 
-* Add ML-based prediction for patient load
-* Implement overload alert system
-* Improve UI design and responsiveness
-* Add charts/visualizations for better demo
+- Integrating the frontend with backend APIs (in progress)
+- Stabilizing data flow and validating API responses
+- Polishing UI interactions and responsiveness for the demo
+
+---
+
+## ⏳ Pending Work
+
+**High priority**
+
+- Connect frontend screens to backend APIs (auth, patient, resource endpoints)
+- Display real-time and near-real-time data where applicable
+- Finalize dashboard visuals (charts, trend indicators, status cards)
+- Test and validate the end-to-end workflow: Input → Backend → Response → UI
+
+**If time permits**
+
+- Add prediction/ML pipeline for patient-load forecasting
+- Implement an alert/notification system for overload and critical events
+- Further UI polish and responsive refinements
 
 ---
 
 ## ⚠️ Known Gaps / Limitations
 
-* Prediction model not yet integrated
-* UI is in basic stage (focus on functionality first)
-* Limited real-time data simulation
+- Prediction model not integrated yet (planned)
+- Real-time streaming is simulated for the demo; production-ready streams are pending
+- Backend is functional; full frontend integration is the remaining work to demonstrate live flows
 
 ---
 
-## 🎯 Immediate Plan (Next Few Hours)
+## 🎯 Current Status
 
-* Finish frontend screens
-* Connect all APIs properly
-* Ensure one complete working flow
-* Test demo multiple times
+- **Backend:** Completed ✅
+- **Frontend:** Structure completed; integration in progress (splash screen & basic UI present)
 
 ---
 
-## 🧠 Final Status Summary
+## 🛠️ Next Few Hours Plan
 
-Backend completed and stable ✅
-Frontend under development 🔄
-Integration and testing in progress 🚀
+- Complete API integration across primary screens
+- Test a full demo workflow (create input → backend processing → UI output)
+- Improve UI polish (micro-interactions, spacing, visual consistency)
+- Prepare and rehearse the demo flow for the hackathon presentation
 
 ---
-- **Styling**: Tailwind CSS
-- **State Management**: React Hooks
 
-### Backend
-- **Framework**: FastAPI
-- **Language**: Python
-- **Server**: Uvicorn
+## 📦 Technical Stack (Key Items)
 
-### Machine Learning
-- **Libraries**: Scikit-learn (planned)
-- **Data Processing**: Pandas, NumPy
-
-### Database
-- **Type**: SQLite (planned)
-- **ORM**: SQLAlchemy
+- **Frontend:** React, Tailwind CSS, Framer Motion, Recharts
+- **Backend:** FastAPI, Uvicorn, SQLAlchemy (ORM)
+- **Data / ML:** Pandas, NumPy (ML integration planned)
 
 ---
 
