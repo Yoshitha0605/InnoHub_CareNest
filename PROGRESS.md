@@ -1,53 +1,78 @@
-# CareNest - Development Progress
+# 🚀 Project Progress Update
 
-## Project Name
-**CareNest**
+## ✅ Completed Work (Backend)
 
-## Team Name
-**InnoHub**
+* Designed and implemented backend using FastAPI
+* Created modular structure:
 
-## Problem Statement
-CareNest is a healthcare prediction and resource optimization platform designed to help hospitals anticipate patient surges and efficiently allocate medical resources. By leveraging machine learning models to predict patient admission patterns, the system enables proactive staffing decisions, inventory management, and improved patient care outcomes.
+  * `routes/` for API endpoints
+  * `models/` for data handling
+  * `database/` for storage integration
+* Implemented core APIs for:
 
-## Progress Timeline
+  * Patient data handling
+  * Resource tracking (beds, ICU, etc.)
+* Backend server successfully tested and running
+* Project structure cleaned and organized (`backend/`)
 
-### Day 1
-- ✅ Finalized problem statement
-- ✅ Defined system architecture
-- ✅ Assigned team roles
+---
 
-### Day 2
-- ✅ Backend setup using FastAPI
-- ✅ Created API endpoints (`/predict`, `/hospital-status`, `/alerts`)
-- ✅ Verified server in Codespaces
+## 🔄 Current Work (Frontend)
 
-### Day 3
-- ✅ Frontend setup (React + Tailwind)
-- ✅ Dashboard UI structure started
+* Building user interface for:
 
-### Day 4 (Planned)
-- ⏳ Integrate ML model for prediction
-- ⏳ Connect frontend with backend APIs
-- ⏳ Add real-time alerts
+  * Hospital dashboard
+  * Data input (patient/ambulance)
+  * Status display
+* Connecting frontend with backend APIs
+* Working on basic UI layout for demo
 
-## Current Status
-- **Backend**: Running successfully with API endpoints functional
-- **Frontend**: Setup in progress with initial dashboard structure
-- **Database**: Schema designed, ready for implementation
-- **ML Model**: Development pipeline established
+---
 
-## Next Steps
-- [ ] ML model integration with backend
-- [ ] Complete dashboard UI components
-- [ ] Implement real-time alert system
-- [ ] Connect frontend with backend APIs
-- [ ] Comprehensive testing across modules
-- [ ] Final deployment and optimization
+## ⏳ Pending Work (High Priority)
 
-## Tech Stack
+* Complete frontend-backend API integration
+* Display real-time data from backend
+* Implement basic dashboard (counts, status, alerts)
+* Test complete flow:
 
-### Frontend
-- **Framework**: React
+  * Input → Processing → Output
+
+---
+
+## ⏳ Pending Work (If Time Permits)
+
+* Add ML-based prediction for patient load
+* Implement overload alert system
+* Improve UI design and responsiveness
+* Add charts/visualizations for better demo
+
+---
+
+## ⚠️ Known Gaps / Limitations
+
+* Prediction model not yet integrated
+* UI is in basic stage (focus on functionality first)
+* Limited real-time data simulation
+
+---
+
+## 🎯 Immediate Plan (Next Few Hours)
+
+* Finish frontend screens
+* Connect all APIs properly
+* Ensure one complete working flow
+* Test demo multiple times
+
+---
+
+## 🧠 Final Status Summary
+
+Backend completed and stable ✅
+Frontend under development 🔄
+Integration and testing in progress 🚀
+
+---
 - **Styling**: Tailwind CSS
 - **State Management**: React Hooks
 
