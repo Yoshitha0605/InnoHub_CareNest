@@ -4,21 +4,27 @@ router = APIRouter()
 
 @router.get("/alerts")
 async def get_alerts():
-    # Get mock data (same as hospital status)
     beds_available = 100
-    icu_usage = 75.5
+    icu_available = 20
     staff_count = 50
     patient_count = 90
-    
-    # Compute overload risk
+    occupancy_rate = 90.0
+
     if patient_count > beds_available:
-        risk = "high"
-    elif icu_usage > 80:
-        risk = "medium"
+        alert_level = "RED"
+        message = "High overload risk detected! Increase ICU beds and support staff immediately."
+    elif occupancy_rate > 70:
+        alert_level = "YELLOW"
+        message = "Near capacity. Monitor admissions and prepare backup resources."
     else:
-        risk = "low"
-    
-    if risk == "high":
-        return {"alert": "High overload risk detected! Immediate action required."}
-    else:
-        return {"alert": "All systems normal"}
+        alert_level = "GREEN"
+        message = "Stable conditions. Continue standard monitoring."
+
+    return {
+        "alert_level": alert_level,
+        "message": message,
+        "patient_count": patient_count,
+        "beds_available": beds_available,
+        "icu_available": icu_available,
+        "occupancy_rate": occupancy_rate,
+    }
