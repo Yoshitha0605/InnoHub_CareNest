@@ -88,4 +88,22 @@ This document captures the current status, recent accomplishments, and immediate
 
 ---
 
+## 🏆 Checkpoint 3 Achievements
+
+### Backend Stability and Enhancements
+- Resolved timeout issues and ensured stable API responses.
+- Simplified backend logic for better maintainability.
+- Integrated real hospital data from a CSV file for the `/hospital-status` endpoint.
+
+### AI Integration
+- Replaced static prediction logic with an AI model for the `/predict` endpoint.
+- Implemented a Random Forest model for patient prediction.
+- Validated AI predictions with test data to ensure accuracy.
+
+### Documentation Updates
+- Updated `PROGRESS.md` to reflect Checkpoint 3 progress.
+- Pending: Update `README.md` to highlight AI integration and backend improvements.
+
+---
+
 *Last Updated: April 28, 2026*
