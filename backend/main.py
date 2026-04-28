@@ -2,6 +2,9 @@ from fastapi import FastAPI
 import pandas as pd
 import os
 
+# Import the backend prediction wrapper which loads the ai-model module dynamically
+from prediction import predict as ai_predict
+
 app = FastAPI()
 
 # Load CSV once at module import (no repeated I/O)
@@ -54,12 +57,26 @@ def hospital_status():
 
 
 @app.post("/predict")
-def predict():
-    return {
-        "predicted_patients_next_6hrs": 120,
-        "surge_risk": "HIGH",
-        "recommended_action": "Increase resources",
+def predict_api():
+    # Use latest CSV row as input to the AI predictor
+    if data is None or data.empty:
+        return {"error": "No data available for prediction"}
+
+    latest = data.iloc[-1]
+
+    input_data = {
+        "patient_count": int(latest.get('patient_count', 0)),
+        "beds_available": int(latest.get('beds_available', 0)),
+        # ai-model expects 'icu_available' key; CSV uses 'icu_usage'
+        "icu_available": int(latest.get('icu_usage', 0)),
+        "staff_count": int(latest.get('staff_count', 0)),
+        "occupancy_rate": float(latest.get('occupancy_rate', 0.0)),
     }
+
+    try:
+        return ai_predict(input_data)
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.get("/alerts")
