@@ -3,51 +3,53 @@ import { AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 
 const AlertCard = ({ alert, onDismiss }) => {
   const getAlertConfig = (level) => {
-    switch (level) {
-      case 'critical':
-      case 'high':
-        return {
-          icon: AlertTriangle,
-          bg: 'bg-gradient-to-r from-danger-500 to-danger-600',
-          lightBg: 'bg-danger-50',
-          border: 'border-danger-200',
-          text: 'text-danger-800',
-          title: 'text-danger-900',
-          description: 'Critical Alert'
-        };
-      case 'warning':
-      case 'medium':
-        return {
-          icon: AlertTriangle,
-          bg: 'bg-gradient-to-r from-warning-500 to-warning-600',
-          lightBg: 'bg-warning-50',
-          border: 'border-warning-200',
-          text: 'text-warning-800',
-          title: 'text-warning-900',
-          description: 'Warning Alert'
-        };
-      case 'info':
-      case 'low':
-        return {
-          icon: Info,
-          bg: 'bg-gradient-to-r from-secondary-500 to-secondary-600',
-          lightBg: 'bg-secondary-50',
-          border: 'border-secondary-200',
-          text: 'text-secondary-800',
-          title: 'text-secondary-900',
-          description: 'Information'
-        };
-      default:
-        return {
-          icon: CheckCircle,
-          bg: 'bg-gradient-to-r from-success-500 to-success-600',
-          lightBg: 'bg-success-50',
-          border: 'border-success-200',
-          text: 'text-success-800',
-          title: 'text-success-900',
-          description: 'Status Normal'
-        };
+    const normalized = (level || '').toString().trim().toLowerCase();
+    if (['red', 'critical', 'high'].includes(normalized)) {
+      return {
+        icon: AlertTriangle,
+        emoji: '🚨',
+        bg: 'bg-gradient-to-r from-danger-500 to-danger-600',
+        lightBg: 'bg-danger-50',
+        border: 'border-danger-200',
+        text: 'text-danger-800',
+        title: 'text-danger-900',
+        description: 'Critical Alert',
+      };
     }
+    if (['yellow', 'warning', 'medium'].includes(normalized)) {
+      return {
+        icon: AlertTriangle,
+        emoji: '⚠️',
+        bg: 'bg-gradient-to-r from-warning-500 to-warning-600',
+        lightBg: 'bg-warning-50',
+        border: 'border-warning-200',
+        text: 'text-warning-800',
+        title: 'text-warning-900',
+        description: 'Warning Alert',
+      };
+    }
+    if (['green', 'info', 'low', 'normal'].includes(normalized)) {
+      return {
+        icon: CheckCircle,
+        emoji: '✅',
+        bg: 'bg-gradient-to-r from-success-500 to-success-600',
+        lightBg: 'bg-success-50',
+        border: 'border-success-200',
+        text: 'text-success-800',
+        title: 'text-success-900',
+        description: 'Status Normal',
+      };
+    }
+    return {
+      icon: Info,
+      emoji: 'ℹ️',
+      bg: 'bg-gradient-to-r from-secondary-500 to-secondary-600',
+      lightBg: 'bg-secondary-50',
+      border: 'border-secondary-200',
+      text: 'text-secondary-800',
+      title: 'text-secondary-900',
+      description: 'Information',
+    };
   };
 
   const config = getAlertConfig(alert.level || alert.risk_level);
