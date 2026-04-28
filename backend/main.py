@@ -32,29 +32,47 @@ def root():
 @app.get("/hospital-status")
 def hospital_status_demo(scenario: str = "normal"):
     return {
-        "current_patients": DEMO_DATA[scenario]["current_patients"],
+        "patient_count": DEMO_DATA[scenario]["current_patients"],
         "beds_available": DEMO_DATA[scenario]["beds_available"],
         "icu_available": DEMO_DATA[scenario]["icu_available"],
-        "staff_available": DEMO_DATA[scenario]["staff_available"],
+        "staff_count": DEMO_DATA[scenario]["staff_available"],
         "occupancy_rate": DEMO_DATA[scenario]["occupancy_rate"],
     }
 
 
 @app.post("/predict")
-def predict_demo(scenario: str = "normal"):
-    return {
-        "prediction": DEMO_DATA[scenario]["prediction"],
-        "confidence": DEMO_DATA[scenario]["confidence"],
-    }
+def predict(data: dict):
+    try:
+        result = ai_predict(data)
+        return {
+            "predicted_patients_next_6hrs": result.get("predicted_patients_next_6hrs", 0),
+            "surge_risk": result.get("surge_risk", "UNKNOWN"),
+            "recommended_action": result.get("recommended_action", "No recommendation available")
+        }
+    except Exception as e:
+        # Fallback to demo data if AI prediction fails
+        print(f"AI prediction failed: {e}")
+        scenario = "critical" if data.get("patient_count", 0) > 150 else "warning" if data.get("patient_count", 0) > 100 else "normal"
+        return {
+            "predicted_patients_next_6hrs": DEMO_DATA[scenario]["current_patients"] + 10,
+            "surge_risk": DEMO_DATA[scenario]["prediction"].split()[0].upper(),  # Extract "Low", "Medium", "High"
+            "recommended_action": DEMO_DATA[scenario]["recommended_action"]
+        }
 
 
 @app.get("/alerts")
 def alerts_demo(scenario: str = "normal"):
-    return {
-        "alert_level": DEMO_DATA[scenario]["alert_level"],
-        "message": DEMO_DATA[scenario]["message"],
-        "recommended_action": DEMO_DATA[scenario]["recommended_action"],
-    }
+    alert_data = DEMO_DATA[scenario]
+    return [{
+        "title": "Critical Alert" if alert_data["alert_level"] == "RED" else "Warning Alert" if alert_data["alert_level"] == "YELLOW" else "Status OK",
+        "message": alert_data["message"],
+        "level": alert_data["alert_level"].lower(),
+        "patient_count": alert_data["current_patients"],
+        "beds_available": alert_data["beds_available"],
+        "icu_available": alert_data["icu_available"],
+        "occupancy_rate": alert_data["occupancy_rate"],
+        "timestamp": "2024-01-15T10:30:00Z",  # Mock timestamp
+    }]
 
 # Controlled demo data
 DEMO_DATA = {
@@ -95,3 +113,7 @@ DEMO_DATA = {
         "recommended_action": "Expand capacity immediately",
     },
 }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8001)
