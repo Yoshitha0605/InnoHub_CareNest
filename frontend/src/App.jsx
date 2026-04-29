@@ -47,10 +47,10 @@ function AppContent({ theme, setTheme }) {
     <div className={`min-h-screen ${bgClass}`}>
       {isAuthenticated && location.pathname !== '/login' && location.pathname !== '/signup' && <Navbar />}
       <Routes>
-        <Route path="/" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />} />
-        <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />} />
-        <Route path="/analytics" element={isAuthenticated ? <Analytics /> : <Navigate to="/login" replace />} />
-        <Route path="/reports" element={isAuthenticated ? <Reports /> : <Navigate to="/login" replace />} />
+        <Route path="/" element={isAuthenticated ? <Dashboard theme={theme} /> : <Navigate to="/login" replace />} />
+        <Route path="/dashboard" element={isAuthenticated ? <Dashboard theme={theme} /> : <Navigate to="/login" replace />} />
+        <Route path="/analytics" element={isAuthenticated ? <Analytics theme={theme} /> : <Navigate to="/login" replace />} />
+        <Route path="/reports" element={isAuthenticated ? <Reports theme={theme} /> : <Navigate to="/login" replace />} />
         <Route path="/settings" element={isAuthenticated ? <Settings theme={theme} onThemeChange={setTheme} /> : <Navigate to="/login" replace />} />
         <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" replace />} />
         <Route path="/signup" element={!isAuthenticated ? <Signup /> : <Navigate to="/dashboard" replace />} />

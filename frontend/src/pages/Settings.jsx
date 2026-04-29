@@ -22,7 +22,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 
-const SettingsPage = ({ theme: propTheme, onThemeChange }) => {
+const SettingsPage = ({ theme, onThemeChange }) => {
   const defaultSettings = {
     theme: 'dark',
     alertThresholds: {
@@ -124,10 +124,8 @@ const SettingsPage = ({ theme: propTheme, onThemeChange }) => {
   };
 
   const handleThemeToggle = () => {
-    const newTheme = settings.theme === 'dark' ? 'light' : 'dark';
-    console.log('Toggling theme from', settings.theme, 'to', newTheme);
-    updateSetting('theme', null, newTheme);
-    localStorage.setItem('theme', newTheme);
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    console.log('Toggling theme from', theme, 'to', newTheme);
     if (onThemeChange) {
       onThemeChange(newTheme);
     }
@@ -206,7 +204,7 @@ const SettingsPage = ({ theme: propTheme, onThemeChange }) => {
     }
   };
 
-  const bgClass = settings.theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-white text-slate-900';
+  const bgClass = theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-white text-slate-900';
 
   return (
     <div className={`min-h-screen ${bgClass}`}>
@@ -278,7 +276,7 @@ const SettingsPage = ({ theme: propTheme, onThemeChange }) => {
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-3">
-                    {settings.theme === 'dark' ? <Moon className="w-5 h-5 text-slate-400" /> : <Sun className="w-5 h-5 text-slate-400" />}
+                    {theme === 'dark' ? <Moon className="w-5 h-5 text-slate-400" /> : <Sun className="w-5 h-5 text-slate-400" />}
                     <div>
                       <p className="text-white font-medium">Theme Mode</p>
                       <p className="text-slate-400 text-sm">Switch between light and dark themes</p>
@@ -287,12 +285,12 @@ const SettingsPage = ({ theme: propTheme, onThemeChange }) => {
                   <button
                     onClick={handleThemeToggle}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.theme === 'dark' ? 'bg-primary-500' : 'bg-slate-600'
+                      theme === 'dark' ? 'bg-primary-500' : 'bg-slate-600'
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        settings.theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
+                        theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { generateReport, downloadReport } from '../services/api';
 import { FileText, Download, Calendar, Filter } from 'lucide-react';
 
-const Reports = () => {
+const Reports = ({ theme }) => {
   const [reportData, setReportData] = useState(null);
   const [loadingReport, setLoadingReport] = useState(false);
   const [reportError, setReportError] = useState('');
@@ -53,10 +53,10 @@ const Reports = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <motion.header
-          className="rounded-[2rem] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/40 backdrop-blur-xl"
+          className={`rounded-[2rem] border ${theme === 'dark' ? 'border-white/10 bg-slate-900/90' : 'border-slate-200 bg-white/90'} p-8 shadow-2xl ${theme === 'dark' ? 'shadow-slate-950/40' : 'shadow-slate-200/40'} backdrop-blur-xl`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}

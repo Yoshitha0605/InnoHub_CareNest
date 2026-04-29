@@ -14,3 +14,68 @@ body.light {
   transition: background-color 200ms ease, color 200ms ease;
 }
 
+/* Theme-aware component classes */
+.card {
+  @apply rounded-[2rem] border backdrop-blur-xl shadow-2xl transition-all;
+}
+
+.card.dark {
+  @apply bg-slate-900/90 border-white/10 shadow-slate-950/40;
+}
+
+.card.light {
+  @apply bg-white/90 border-slate-200 shadow-slate-200/40;
+}
+
+.container {
+  @apply mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8;
+}
+
+.header {
+  @apply rounded-[2rem] border p-8 backdrop-blur-xl shadow-2xl transition-all;
+}
+
+.header.dark {
+  @apply bg-slate-900/90 border-white/10 shadow-slate-950/40;
+}
+
+.header.light {
+  @apply bg-white/90 border-slate-200 shadow-slate-200/40;
+}
+
+.text-primary {
+  @apply text-white;
+}
+
+.text-primary.dark {
+  @apply text-white;
+}
+
+.text-primary.light {
+  @apply text-slate-900;
+}
+
+.text-secondary {
+  @apply text-slate-300;
+}
+
+.text-secondary.dark {
+  @apply text-slate-300;
+}
+
+.text-secondary.light {
+  @apply text-slate-600;
+}
+
+.text-muted {
+  @apply text-slate-400;
+}
+
+.text-muted.dark {
+  @apply text-slate-400;
+}
+
+.text-muted.light {
+  @apply text-slate-500;
+}
+
