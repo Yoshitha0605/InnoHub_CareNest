@@ -109,12 +109,18 @@ const MetricCard = ({
 
         {/* Content */}
         <div>
-          <h3 className="text-3xl font-bold text-secondary-900 mb-1">
+          <h3 className={`text-3xl font-bold mb-1 ${
+            theme === 'dark' ? 'text-secondary-900' : 'text-slate-900'
+          }`}>
             {typeof value === 'number' ? value.toLocaleString() : value}
           </h3>
-          <p className="text-sm font-medium text-secondary-700 mb-1">{title}</p>
+          <p className={`text-sm font-medium mb-1 ${
+            theme === 'dark' ? 'text-secondary-700' : 'text-slate-700'
+          }`}>{title}</p>
           {subtitle && (
-            <p className="text-xs text-secondary-500">{subtitle}</p>
+            <p className={`text-xs ${
+              theme === 'dark' ? 'text-secondary-500' : 'text-slate-500'
+            }`}>{subtitle}</p>
           )}
         </div>
 

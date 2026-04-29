@@ -12,7 +12,7 @@ import { getStoredUser } from './services/api';
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [theme, setTheme] = useState('dark'); // Force dark theme for stability
 
   useEffect(() => {
     const t = setTimeout(() => setShowSplash(false), 5000);
@@ -20,10 +20,12 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // Force dark theme globally for demo stability
     document.body.classList.remove('dark', 'light');
-    document.body.classList.add(theme);
-    console.log('App theme updated to:', theme);
-  }, [theme]);
+    document.body.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+    console.log('App theme forced to dark for stability');
+  }, []);
 
   if (showSplash) {
     return <SplashScreen />;
@@ -41,17 +43,18 @@ function AppContent({ theme, setTheme }) {
   const user = getStoredUser();
   const isAuthenticated = Boolean(user);
 
-  const bgClass = theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-white text-slate-900';
+  // Force dark theme for stability
+  const bgClass = 'bg-slate-950 text-slate-100';
 
   return (
     <div className={`min-h-screen ${bgClass}`}>
       {isAuthenticated && location.pathname !== '/login' && location.pathname !== '/signup' && <Navbar />}
       <Routes>
-        <Route path="/" element={isAuthenticated ? <Dashboard theme={theme} /> : <Navigate to="/login" replace />} />
-        <Route path="/dashboard" element={isAuthenticated ? <Dashboard theme={theme} /> : <Navigate to="/login" replace />} />
-        <Route path="/analytics" element={isAuthenticated ? <Analytics theme={theme} /> : <Navigate to="/login" replace />} />
-        <Route path="/reports" element={isAuthenticated ? <Reports theme={theme} /> : <Navigate to="/login" replace />} />
-        <Route path="/settings" element={isAuthenticated ? <Settings theme={theme} onThemeChange={setTheme} /> : <Navigate to="/login" replace />} />
+        <Route path="/" element={isAuthenticated ? <Dashboard theme={'dark'} /> : <Navigate to="/login" replace />} />
+        <Route path="/dashboard" element={isAuthenticated ? <Dashboard theme={'dark'} /> : <Navigate to="/login" replace />} />
+        <Route path="/analytics" element={isAuthenticated ? <Analytics theme={'dark'} /> : <Navigate to="/login" replace />} />
+        <Route path="/reports" element={isAuthenticated ? <Reports theme={'dark'} /> : <Navigate to="/login" replace />} />
+        <Route path="/settings" element={isAuthenticated ? <Settings theme={'dark'} onThemeChange={setTheme} /> : <Navigate to="/login" replace />} />
         <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" replace />} />
         <Route path="/signup" element={!isAuthenticated ? <Signup /> : <Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import jsPDF from 'jspdf';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8001',
@@ -63,17 +64,73 @@ export const generateReport = async (reportType = 'summary') => {
   }
 };
 
-export const downloadReport = (reportData, filename = 'hospital-report.json') => {
-  const dataStr = JSON.stringify(reportData, null, 2);
-  const dataBlob = new Blob([dataStr], { type: 'application/json' });
-  const url = URL.createObjectURL(dataBlob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+export const downloadReport = (reportData, filename = 'hospital-report.pdf') => {
+  try {
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(20);
+    doc.text('CareNest Hospital Report', 20, 30);
+
+    // Report details
+    doc.setFontSize(12);
+    let yPosition = 50;
+
+    if (reportData.summary) {
+      doc.text(`Hospital: ${reportData.hospital_name || 'CareNest Hospital'}`, 20, yPosition);
+      yPosition += 10;
+      doc.text(`Region: ${reportData.hospital_region || 'Central City'}`, 20, yPosition);
+      yPosition += 10;
+      doc.text(`Generated: ${new Date(reportData.generated_at || Date.now()).toLocaleDateString()}`, 20, yPosition);
+      yPosition += 20;
+
+      // Summary data
+      doc.setFontSize(14);
+      doc.text('Summary:', 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(12);
+
+      doc.text(`Current Patients: ${reportData.summary.current_patients || 0}`, 20, yPosition);
+      yPosition += 10;
+      doc.text(`Beds Available: ${reportData.summary.beds_available || 0}`, 20, yPosition);
+      yPosition += 10;
+      doc.text(`ICU Available: ${reportData.summary.icu_available || 0}`, 20, yPosition);
+      yPosition += 10;
+      doc.text(`Occupancy Rate: ${reportData.summary.occupancy_rate || 0}%`, 20, yPosition);
+      yPosition += 10;
+      doc.text(`Alert Level: ${reportData.summary.alert_level || 'GREEN'}`, 20, yPosition);
+    } else {
+      // Fallback for other report formats
+      Object.keys(reportData).forEach(key => {
+        if (key !== 'report_type') {
+          const value = typeof reportData[key] === 'object' ? JSON.stringify(reportData[key]) : reportData[key];
+          doc.text(`${key}: ${value}`, 20, yPosition);
+          yPosition += 10;
+        }
+      });
+    }
+
+    // Save the PDF
+    doc.save(filename);
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    // Fallback to text download
+    const content = `
+CareNest Hospital Report
+-----------------------
+${JSON.stringify(reportData, null, 2)}
+`;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename.replace('.pdf', '.txt');
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  }
 };
 
 export const getHospitalStatus = async () => {

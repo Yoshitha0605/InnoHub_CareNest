@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { generateReport, downloadReport } from '../services/api';
 import { FileText, Download, Calendar, Filter } from 'lucide-react';
 
 const Reports = ({ theme }) => {
@@ -32,31 +31,33 @@ const Reports = ({ theme }) => {
     },
   ];
 
-  const handleGenerateReport = async (type) => {
-    setLoadingReport(true);
-    setReportError('');
-    try {
-      const data = await generateReport(type);
-      setReportData(data);
-    } catch (err) {
-      console.error('Generate report failed', err);
-      setReportError('Unable to generate report. Please try again later.');
-    } finally {
-      setLoadingReport(false);
-    }
+  const handleGenerate = (type) => {
+    console.log("Generate clicked:", type);
+
+    // FORCE DATA (no backend dependency)
+    const demoData = {
+      title: "Demo Report",
+      hospital: "CareNest Hospital",
+      patients: Math.floor(Math.random() * 100) + 50,
+      beds: 80,
+      icu: 20,
+      status: "Stable"
+    };
+
+    setReportData(demoData);
   };
 
   const handleDownloadReport = () => {
     if (reportData) {
-      downloadReport(reportData, `hospital-report-${reportData.report_type || 'summary'}.json`);
+      downloadReport(reportData, `hospital-report-${reportData.report_type || 'summary'}.pdf`);
     }
   };
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+    <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <motion.header
-          className={`rounded-[2rem] border ${theme === 'dark' ? 'border-white/10 bg-slate-900/90' : 'border-slate-200 bg-white/90'} p-8 shadow-2xl ${theme === 'dark' ? 'shadow-slate-950/40' : 'shadow-slate-200/40'} backdrop-blur-xl`}
+          className="rounded-[2rem] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/40 backdrop-blur-xl"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -114,7 +115,7 @@ const Reports = ({ theme }) => {
               <p className="text-slate-400 text-sm">{item.description}</p>
               <button
                 type="button"
-                onClick={() => handleGenerateReport(item.type)}
+                onClick={() => handleGenerate(item.type)}
                 disabled={loadingReport}
                 className="mt-4 w-full inline-flex items-center justify-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60 disabled:cursor-not-allowed"
               >
@@ -133,13 +134,14 @@ const Reports = ({ theme }) => {
 
         {reportData && (
           <motion.div
+            id="report-section"
             className="mt-6 rounded-[2rem] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/25"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-white">Generated Report</h2>
+              <h2 className="text-2xl font-semibold text-white">{reportData.title || 'Generated Report'}</h2>
               <button
                 onClick={handleDownloadReport}
                 className="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
@@ -156,18 +158,93 @@ const Reports = ({ theme }) => {
                 <p className="text-slate-500 text-sm">{reportData.hospital_region}</p>
               </div>
               <div className="rounded-3xl bg-slate-950/80 p-5">
-                <p className="text-sm text-slate-400">Current patients</p>
-                <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.current_patients}</p>
+                <p className="text-sm text-slate-400">Report Type</p>
+                <p className="mt-2 text-lg font-semibold text-white">{reportData.report_type}</p>
+              </div>
+
+              {/* Daily Report Fields */}
+              {reportData.report_type === 'daily' && (
+                <>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Current Patients</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.current_patients}</p>
+                  </div>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Admissions Today</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.admissions}</p>
+                  </div>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Discharges Today</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.discharges}</p>
+                  </div>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Available Beds</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.beds_available}</p>
+                  </div>
+                </>
+              )}
+
+              {/* Weekly Report Fields */}
+              {reportData.report_type === 'weekly' && (
+                <>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Staff Efficiency</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.staff_efficiency}</p>
+                  </div>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Average Patients</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.avg_patients}</p>
+                  </div>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Bed Utilization</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.beds_utilization}</p>
+                  </div>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Total Admissions</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.total_admissions}</p>
+                  </div>
+                </>
+              )}
+
+              {/* Custom Report Fields */}
+              {reportData.report_type === 'custom' && (
+                <>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Filtered Data</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.filtered_data}</p>
+                  </div>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Analysis Period</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.analysis_period}</p>
+                  </div>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Current Patients</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.current_patients}</p>
+                  </div>
+                  <div className="rounded-3xl bg-slate-950/80 p-5">
+                    <p className="text-sm text-slate-400">Custom Filters</p>
+                    <p className="mt-2 text-sm font-semibold text-white">{reportData.summary?.custom_filters?.join(', ')}</p>
+                  </div>
+                </>
+              )}
+
+              {/* Common Fields */}
+              <div className="rounded-3xl bg-slate-950/80 p-5">
+                <p className="text-sm text-slate-400">Alert Level</p>
+                <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.alert_level}</p>
               </div>
               <div className="rounded-3xl bg-slate-950/80 p-5">
-                <p className="text-sm text-slate-400">Available beds</p>
-                <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.beds_available}</p>
-              </div>
-              <div className="rounded-3xl bg-slate-950/80 p-5">
-                <p className="text-sm text-slate-400">Occupancy</p>
-                <p className="mt-2 text-lg font-semibold text-white">{reportData.summary?.occupancy_rate}%</p>
+                <p className="text-sm text-slate-400">Confidence</p>
+                <p className="mt-2 text-lg font-semibold text-white">{reportData.confidence}</p>
               </div>
             </div>
+
+            {reportData.recommended_action && (
+              <div className="mt-6 rounded-3xl bg-slate-950/80 p-5">
+                <p className="text-sm text-slate-400 mb-2">Recommended Action</p>
+                <p className="text-white">{reportData.recommended_action}</p>
+              </div>
+            )}
           </motion.div>
         )}
 

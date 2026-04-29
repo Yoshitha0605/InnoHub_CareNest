@@ -10,7 +10,7 @@ const formatRisk = (risk) => {
   return 'Low';
 };
 
-const PredictionForm = () => {
+const PredictionForm = ({ theme = 'dark' }) => {
   const [form, setForm] = useState({
     patient_count: 90,
     beds_available: 100,
@@ -63,14 +63,24 @@ const PredictionForm = () => {
   };
 
   return (
-    <div className="rounded-[2rem] border border-white/10 bg-slate-900/90 p-6 shadow-2xl shadow-slate-950/25">
+    <div className={`rounded-[2rem] border p-6 shadow-2xl ${
+      theme === 'dark'
+        ? 'border-white/10 bg-slate-900/90 shadow-slate-950/25'
+        : 'border-slate-200 bg-white/90 shadow-slate-200/25'
+    }`}>
       <div className="mb-6">
-        <p className="text-sm uppercase tracking-[0.35em] text-slate-500">Predictive input</p>
-        <h3 className="mt-3 text-2xl font-semibold text-white">Hospital data simulator</h3>
+        <p className={`text-sm uppercase tracking-[0.35em] ${
+          theme === 'dark' ? 'text-slate-500' : 'text-slate-600'
+        }`}>Predictive input</p>
+        <h3 className={`mt-3 text-2xl font-semibold ${
+          theme === 'dark' ? 'text-white' : 'text-slate-900'
+        }`}>Hospital data simulator</h3>
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
-        <label className="space-y-2 text-sm text-slate-300">
+        <label className={`space-y-2 text-sm ${
+          theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+        }`}>
           Current patients
           <input
             name="patient_count"
@@ -78,7 +88,11 @@ const PredictionForm = () => {
             value={form.patient_count}
             onChange={handleChange}
             min="0"
-            className="w-full rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-white outline-none transition focus:border-primary-400"
+            className={`w-full rounded-3xl border px-4 py-3 outline-none transition focus:border-primary-400 ${
+              theme === 'dark'
+                ? 'border-slate-700 bg-slate-950/90 text-white'
+                : 'border-slate-300 bg-white text-slate-900'
+            }`}
           />
         </label>
         <label className="space-y-2 text-sm text-slate-300">
