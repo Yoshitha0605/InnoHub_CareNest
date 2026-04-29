@@ -159,13 +159,14 @@ def root():
 
 
 @app.post("/login", response_model=LoginResponse)
-def login(request: LoginRequest):
-    if not request.username or not request.password:
-        raise HTTPException(status_code=400, detail="Username and password are required")
+def login(data: dict):
+    username = data.get("username") or "DemoUser"
+    role = data.get("role") or "Admin"
+
     return {
-        "username": request.username,
-        "role": request.role,
-        "email": f"{request.username.lower()}@carenest.com",
+        "username": username,
+        "role": role,
+        "email": f"{username.lower()}@carenest.com",
     }
 
 
