@@ -1,11 +1,20 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, Download, Calendar, Filter } from 'lucide-react';
 
 const Reports = ({ theme }) => {
   const [report, setReport] = useState(null);
   const [loadingReport, setLoadingReport] = useState(false);
   const [reportError, setReportError] = useState('');
+
+  useEffect(() => {
+    setReport({
+      title: "Demo Report",
+      hospital: "CareNest Hospital",
+      patients: 100,
+      status: "Stable"
+    });
+  }, []);
 
   const reportOptions = [
     {
@@ -64,12 +73,28 @@ const Reports = ({ theme }) => {
     };
 
     setReport(demoData);
+    console.log("Report state:", demoData);
   };
 
-  const handleDownloadReport = () => {
-    if (reportData) {
-      downloadReport(reportData, `hospital-report-${reportData.report_type || 'summary'}.pdf`);
-    }
+  const handleDownload = () => {
+    if (!report) return;
+
+    const content = `
+CareNest Report
+------------------------
+Title: ${report.title}
+Hospital: ${report.hospital}
+Patients: ${report.patients}
+Status: ${report.status}
+`;
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "CareNest_Report.txt";
+    a.click();
   };
 
   return (
@@ -140,6 +165,12 @@ const Reports = ({ theme }) => {
             <p>Patients: {report.patients}</p>
             <p>Status: {report.status}</p>
           </div>
+        )}
+
+        {report && (
+          <button onClick={handleDownload}>
+            Download Report
+          </button>
         )}
 
         <button onClick={() => console.log("Clicked")}>
