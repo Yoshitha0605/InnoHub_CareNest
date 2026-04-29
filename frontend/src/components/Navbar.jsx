@@ -2,22 +2,21 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Activity, Bell, Settings, User, LogOut } from 'lucide-react';
+import { getStoredUser, removeStoredUser } from '../services/api';
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [displayName, setDisplayName] = useState('User');
+  const [displayName, setDisplayName] = useState('CareNest User');
+  const [roleLabel, setRoleLabel] = useState('Member');
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('care-nest-user');
-      if (raw) {
-        const stored = JSON.parse(raw);
-        setDisplayName(stored.username || stored.role || 'CareNest User');
-      }
-    } catch {
-      // ignore invalid stored user
+    const stored = getStoredUser();
+    if (stored) {
+      setDisplayName(stored.username || stored.name || stored.email || 'CareNest User');
+      setRoleLabel(stored.role || 'Member');
     }
   }, []);
 
@@ -30,10 +29,39 @@ const Navbar = () => {
 
   const handleNotificationClick = () => {
     setShowNotifications((prev) => !prev);
+    setShowUserMenu(false);
+  };
+
+  useEffect(() => {
+    if (!showNotifications) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setShowNotifications(false);
+    }, 4000);
+
+    return () => window.clearTimeout(timer);
+  }, [showNotifications]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.notification-container')) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  const handleUserMenuToggle = () => {
+    setShowUserMenu((prev) => !prev);
+    setShowNotifications(false);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('care-nest-user');
+    removeStoredUser();
     navigate('/login');
   };
 
@@ -89,7 +117,7 @@ const Navbar = () => {
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <div className="relative">
+            <div className="relative notification-container">
               <motion.button
                 onClick={handleNotificationClick}
                 className="relative p-2 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200"
@@ -125,7 +153,7 @@ const Navbar = () => {
             {/* User Profile */}
             <div className="relative">
               <motion.button
-                onClick={() => setShowNotifications(prev => !prev)} // Reuse showNotifications for user menu
+                onClick={handleUserMenuToggle}
                 className="flex items-center space-x-2 p-2 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -136,11 +164,11 @@ const Navbar = () => {
                 <span className="hidden sm:block text-sm font-medium">{displayName}</span>
               </motion.button>
 
-              {showNotifications && (
-                <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl z-50">
+              {showUserMenu && (
+                <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl z-50">
                   <div className="p-4">
                     <p className="text-sm font-semibold text-slate-900">{displayName}</p>
-                    <p className="text-xs text-slate-600">CareNest User</p>
+                    <p className="text-xs text-slate-600">{roleLabel}</p>
                   </div>
                   <div className="border-t border-slate-200">
                     <button

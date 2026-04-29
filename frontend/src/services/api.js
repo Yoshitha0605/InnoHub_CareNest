@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8003',
+  baseURL: import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8001',
   timeout: 30000,  // Increased timeout for AI predictions
   headers: {
     'Content-Type': 'application/json',
@@ -10,7 +10,7 @@ const api = axios.create({
 
 export const getStoredUser = () => {
   try {
-    const raw = localStorage.getItem('care-nest-user');
+    const raw = localStorage.getItem('user') || localStorage.getItem('care-nest-user');
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -18,10 +18,11 @@ export const getStoredUser = () => {
 };
 
 export const storeUser = (user) => {
-  localStorage.setItem('care-nest-user', JSON.stringify(user));
+  localStorage.setItem('user', JSON.stringify(user));
 };
 
 export const removeStoredUser = () => {
+  localStorage.removeItem('user');
   localStorage.removeItem('care-nest-user');
 };
 

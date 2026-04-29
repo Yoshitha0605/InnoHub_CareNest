@@ -26,13 +26,15 @@ const Login = () => {
     setError('');
     setLoading(true);
 
-    try {
-      if (!form.username || !form.password) {
-        setError('Please enter both username and password');
-        return;
-      }
+    if (!form.username || !form.password) {
+      setError('Please enter both username and password');
+      setLoading(false);
+      return;
+    }
 
+    try {
       const response = await login(form);
+      console.log('Login success:', response);
       storeUser(response);
       navigate('/dashboard');
     } catch (err) {

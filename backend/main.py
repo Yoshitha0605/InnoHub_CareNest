@@ -19,11 +19,9 @@ class LoginRequest(BaseModel):
 
 
 class LoginResponse(BaseModel):
-    status: str
     username: str
     role: str
     email: str
-    token: str
 
 
 class PredictionResponse(BaseModel):
@@ -165,11 +163,9 @@ def login(request: LoginRequest):
     if not request.username or not request.password:
         raise HTTPException(status_code=400, detail="Username and password are required")
     return {
-        "status": "success",
-        "username": request.username.title(),
+        "username": request.username,
         "role": request.role,
         "email": f"{request.username.lower()}@carenest.com",
-        "token": "demo-token",
     }
 
 
@@ -357,4 +353,4 @@ DEMO_DATA = {
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8003)
+    uvicorn.run(app, host="127.0.0.1", port=8001)

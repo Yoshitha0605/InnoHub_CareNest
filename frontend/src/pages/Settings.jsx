@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { getSettings, updateSettings } from '../services/api';
+import { getSettings, updateSettings, getStoredUser } from '../services/api';
 import {
   Settings,
   Bell,
@@ -22,32 +22,36 @@ import {
   CheckCircle
 } from 'lucide-react';
 
-const SettingsPage = () => {
-  const [theme, setTheme] = useState('dark');
-  const [alertThresholds, setAlertThresholds] = useState({
-    patientCapacity: 85,
-    icuUsage: 90,
-    staffShortage: 20,
-  });
-  const [notifications, setNotifications] = useState({
-    emailAlerts: true,
-    smsAlerts: false,
-    pushNotifications: true,
-    criticalAlerts: true,
-    maintenanceAlerts: false,
-  });
-  const [profile, setProfile] = useState({
-    name: '',
-    role: '',
-    hospital: 'Metro General Hospital',
-    email: '',
-  });
-  const [adminSettings, setAdminSettings] = useState({
-    demoMode: true,
-    dataRetention: 365,
-    autoBackup: true,
-    maintenanceMode: false,
-  });
+const SettingsPage = ({ theme: propTheme, onThemeChange }) => {
+  const defaultSettings = {
+    theme: 'dark',
+    alertThresholds: {
+      patientCapacity: 85,
+      icuUsage: 90,
+      staffShortage: 20,
+    },
+    notifications: {
+      emailAlerts: true,
+      smsAlerts: false,
+      pushNotifications: true,
+      criticalAlerts: true,
+      maintenanceAlerts: false,
+    },
+    profile: {
+      name: '',
+      role: '',
+      hospital: 'Metro General Hospital',
+      email: '',
+    },
+    adminSettings: {
+      demoMode: true,
+      dataRetention: 365,
+      autoBackup: true,
+      maintenanceMode: false,
+    },
+  };
+
+  const [settings, setSettings] = useState(defaultSettings);
   const [showPassword, setShowPassword] = useState(false);
   const [settingsStatus, setSettingsStatus] = useState('');
   const [showNotification, setShowNotification] = useState(false);
@@ -56,79 +60,86 @@ const SettingsPage = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const settings = await getSettings();
-        setTheme(settings.theme_mode || 'dark');
-        // Apply theme to document
-        document.documentElement.classList.toggle('dark', settings.theme_mode === 'dark');
-        setAlertThresholds(prev => ({
+        const apiSettings = await getSettings();
+        const savedSettings = localStorage.getItem('hospital-settings');
+        const parsedSettings = savedSettings ? JSON.parse(savedSettings) : {};
+
+        setSettings(prev => ({
           ...prev,
-          patientCapacity: settings.alert_thresholds?.patient_count ?? prev.patientCapacity,
-          icuUsage: settings.alert_thresholds?.icu_usage ?? prev.icuUsage,
-        }));
-        setNotifications(prev => ({
-          ...prev,
-          emailAlerts: settings.notification_preferences?.email ?? prev.emailAlerts,
-          smsAlerts: settings.notification_preferences?.sms ?? prev.smsAlerts,
-          pushNotifications: settings.notification_preferences?.push ?? prev.pushNotifications,
+          theme: parsedSettings.theme || apiSettings.theme_mode || localStorage.getItem('theme') || 'dark',
+          alertThresholds: {
+            ...prev.alertThresholds,
+            patientCapacity: parsedSettings.alertThresholds?.patientCapacity ?? apiSettings.alert_thresholds?.patient_count ?? prev.alertThresholds.patientCapacity,
+            icuUsage: parsedSettings.alertThresholds?.icuUsage ?? apiSettings.alert_thresholds?.icu_usage ?? prev.alertThresholds.icuUsage,
+            staffShortage: parsedSettings.alertThresholds?.staffShortage ?? prev.alertThresholds.staffShortage,
+          },
+          notifications: {
+            ...prev.notifications,
+            emailAlerts: parsedSettings.notifications?.emailAlerts ?? apiSettings.notification_preferences?.email ?? prev.notifications.emailAlerts,
+            smsAlerts: parsedSettings.notifications?.smsAlerts ?? apiSettings.notification_preferences?.sms ?? prev.notifications.smsAlerts,
+            pushNotifications: parsedSettings.notifications?.pushNotifications ?? apiSettings.notification_preferences?.push ?? prev.notifications.pushNotifications,
+            criticalAlerts: parsedSettings.notifications?.criticalAlerts ?? prev.notifications.criticalAlerts,
+            maintenanceAlerts: parsedSettings.notifications?.maintenanceAlerts ?? prev.notifications.maintenanceAlerts,
+          },
+          adminSettings: parsedSettings.adminSettings || prev.adminSettings,
         }));
       } catch (err) {
         console.error('Unable to load settings', err);
       }
     };
 
-    // Load user data from localStorage
+    // Load user data from stored session
     try {
-      const userData = localStorage.getItem('care-nest-user');
-      if (userData) {
-        const user = JSON.parse(userData);
-        setProfile(prev => ({
+      const user = getStoredUser();
+      if (user) {
+        setSettings(prev => ({
           ...prev,
-          name: user.username || '',
-          role: user.role || '',
-          email: user.email || '',
+          profile: {
+            ...prev.profile,
+            name: user.username || user.name || '',
+            role: user.role || '',
+            email: user.email || '',
+          },
         }));
       }
     } catch (err) {
       console.error('Unable to load user data', err);
     }
 
-    // Load settings from localStorage
-    try {
-      const savedSettings = localStorage.getItem('hospital-settings');
-      if (savedSettings) {
-        const parsed = JSON.parse(savedSettings);
-        setTheme(parsed.theme || 'dark');
-        setAlertThresholds(parsed.alertThresholds || alertThresholds);
-        setNotifications(parsed.notifications || notifications);
-        setAdminSettings(parsed.adminSettings || adminSettings);
-        document.documentElement.classList.toggle('dark', parsed.theme === 'dark');
-      }
-    } catch (err) {
-      console.error('Unable to load saved settings', err);
-    }
-
     loadSettings();
   }, []);
 
+  useEffect(() => {
+    document.body.classList.remove('dark', 'light');
+    document.body.classList.add(settings.theme);
+  }, [settings.theme]);
+
+  const updateSetting = (section, key, value) => {
+    setSettings(prev => ({
+      ...prev,
+      [section]: typeof prev[section] === 'object' && prev[section] !== null
+        ? { ...prev[section], [key]: value }
+        : value,
+    }));
+  };
+
   const handleThemeToggle = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
-    localStorage.setItem('app-theme', newTheme);
+    const newTheme = settings.theme === 'dark' ? 'light' : 'dark';
+    console.log('Toggling theme from', settings.theme, 'to', newTheme);
+    updateSetting('theme', null, newTheme);
+    localStorage.setItem('theme', newTheme);
+    if (onThemeChange) {
+      onThemeChange(newTheme);
+    }
+    console.log('Theme saved to localStorage:', localStorage.getItem('theme'));
   };
 
   const handleThresholdChange = (key, value) => {
-    setAlertThresholds(prev => ({
-      ...prev,
-      [key]: parseInt(value)
-    }));
+    updateSetting('alertThresholds', key, parseInt(value));
   };
 
   const handleNotificationChange = (key, value) => {
-    setNotifications(prev => ({
-      ...prev,
-      [key]: value
-    }));
+    updateSetting('notifications', key, value);
 
     // Show notification alert
     const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
@@ -144,76 +155,49 @@ const SettingsPage = () => {
   };
 
   const handleProfileChange = (key, value) => {
-    setProfile(prev => ({
-      ...prev,
-      [key]: value
-    }));
+    updateSetting('profile', key, value);
   };
 
   const handleAdminChange = (key, value) => {
-    setAdminSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
+    updateSetting('adminSettings', key, value);
   };
 
   const handleReset = () => {
-    const defaultSettings = {
-      theme: 'dark',
-      alertThresholds: {
-        patientCapacity: 85,
-        icuUsage: 90,
-        staffShortage: 20,
-      },
-      notifications: {
-        emailAlerts: true,
-        smsAlerts: false,
-        pushNotifications: true,
-        criticalAlerts: true,
-        maintenanceAlerts: false,
-      },
-      adminSettings: {
-        demoMode: true,
-        dataRetention: 365,
-        autoBackup: true,
-        maintenanceMode: false,
-      },
-    };
-
-    setTheme(defaultSettings.theme);
-    setAlertThresholds(defaultSettings.alertThresholds);
-    setNotifications(defaultSettings.notifications);
-    setAdminSettings(defaultSettings.adminSettings);
-
+    setSettings(defaultSettings);
+    localStorage.setItem('theme', defaultSettings.theme);
     localStorage.setItem('hospital-settings', JSON.stringify(defaultSettings));
+    if (onThemeChange) {
+      onThemeChange(defaultSettings.theme);
+    }
+    console.log('Settings reset to defaults, theme:', defaultSettings.theme);
     setSettingsStatus('✓ Settings reset to defaults.');
     setTimeout(() => setSettingsStatus(''), 3500);
   };
 
   const handleSave = async () => {
     try {
+      console.log('Saving settings with theme:', settings.theme);
       const saved = await updateSettings({
-        theme_mode: theme,
+        theme_mode: settings.theme,
         alert_thresholds: {
-          patient_count: alertThresholds.patientCapacity,
-          icu_usage: alertThresholds.icuUsage,
+          patient_count: settings.alertThresholds.patientCapacity,
+          icu_usage: settings.alertThresholds.icuUsage,
           occupancy_rate: 0,
         },
         notification_preferences: {
-          email: notifications.emailAlerts,
-          sms: notifications.smsAlerts,
-          push: notifications.pushNotifications,
+          email: settings.notifications.emailAlerts,
+          sms: settings.notifications.smsAlerts,
+          push: settings.notifications.pushNotifications,
         },
       });
       console.log('Settings saved:', saved);
+      localStorage.setItem('theme', settings.theme);
+      localStorage.setItem('hospital-settings', JSON.stringify(settings));
+      console.log('All data persisted to localStorage:', {
+        theme: localStorage.getItem('theme'),
+        settings: localStorage.getItem('hospital-settings')
+      });
       setSettingsStatus('✓ Settings updated successfully.');
-      localStorage.setItem('hospital-settings', JSON.stringify({
-        theme,
-        alertThresholds,
-        notifications,
-        profile,
-        adminSettings,
-      }));
       setTimeout(() => setSettingsStatus(''), 3500);
     } catch (err) {
       console.error('Error saving settings', err);
@@ -222,8 +206,10 @@ const SettingsPage = () => {
     }
   };
 
+  const bgClass = settings.theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-white text-slate-900';
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className={`min-h-screen ${bgClass}`}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <motion.header
           className="rounded-[2rem] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/40 backdrop-blur-xl"
@@ -290,9 +276,9 @@ const SettingsPage = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50">
+                <div className="flex items-center gap-3">
                   <div className="flex items-center gap-3">
-                    {theme === 'dark' ? <Moon className="w-5 h-5 text-slate-400" /> : <Sun className="w-5 h-5 text-slate-400" />}
+                    {settings.theme === 'dark' ? <Moon className="w-5 h-5 text-slate-400" /> : <Sun className="w-5 h-5 text-slate-400" />}
                     <div>
                       <p className="text-white font-medium">Theme Mode</p>
                       <p className="text-slate-400 text-sm">Switch between light and dark themes</p>
@@ -301,12 +287,12 @@ const SettingsPage = () => {
                   <button
                     onClick={handleThemeToggle}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      theme === 'dark' ? 'bg-primary-500' : 'bg-slate-600'
+                      settings.theme === 'dark' ? 'bg-primary-500' : 'bg-slate-600'
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
+                        settings.theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>
@@ -340,13 +326,13 @@ const SettingsPage = () => {
                     type="range"
                     min="50"
                     max="100"
-                    value={alertThresholds.patientCapacity}
+                    value={settings.alertThresholds.patientCapacity}
                     onChange={(e) => handleThresholdChange('patientCapacity', e.target.value)}
                     className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
                   />
                   <div className="flex justify-between text-sm text-slate-400">
                     <span>50%</span>
-                    <span className="text-white font-medium">{alertThresholds.patientCapacity}%</span>
+                    <span className="text-white font-medium">{settings.alertThresholds.patientCapacity}%</span>
                     <span>100%</span>
                   </div>
                 </div>
@@ -359,13 +345,13 @@ const SettingsPage = () => {
                     type="range"
                     min="70"
                     max="100"
-                    value={alertThresholds.icuUsage}
+                    value={settings.alertThresholds.icuUsage}
                     onChange={(e) => handleThresholdChange('icuUsage', e.target.value)}
                     className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
                   />
                   <div className="flex justify-between text-sm text-slate-400">
                     <span>70%</span>
-                    <span className="text-white font-medium">{alertThresholds.icuUsage}%</span>
+                    <span className="text-white font-medium">{settings.alertThresholds.icuUsage}%</span>
                     <span>100%</span>
                   </div>
                 </div>
@@ -378,13 +364,13 @@ const SettingsPage = () => {
                     type="range"
                     min="10"
                     max="50"
-                    value={alertThresholds.staffShortage}
+                    value={settings.alertThresholds.staffShortage}
                     onChange={(e) => handleThresholdChange('staffShortage', e.target.value)}
                     className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
                   />
                   <div className="flex justify-between text-sm text-slate-400">
                     <span>10%</span>
-                    <span className="text-white font-medium">{alertThresholds.staffShortage}%</span>
+                    <span className="text-white font-medium">{settings.alertThresholds.staffShortage}%</span>
                     <span>50%</span>
                   </div>
                 </div>
@@ -425,14 +411,14 @@ const SettingsPage = () => {
                       </div>
                     </div>
                     <button
-                      onClick={() => handleNotificationChange(item.key, !notifications[item.key])}
+                      onClick={() => handleNotificationChange(item.key, !settings.notifications[item.key])}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        notifications[item.key] ? 'bg-primary-500' : 'bg-slate-600'
+                        settings.notifications[item.key] ? 'bg-primary-500' : 'bg-slate-600'
                       }`}
                     >
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          notifications[item.key] ? 'translate-x-6' : 'translate-x-1'
+                          settings.notifications[item.key] ? 'translate-x-6' : 'translate-x-1'
                         }`}
                       />
                     </button>
@@ -463,7 +449,7 @@ const SettingsPage = () => {
                   <label className="block text-sm font-medium text-slate-300">Full Name</label>
                   <input
                     type="text"
-                    value={profile.name}
+                    value={settings.profile.name}
                     onChange={(e) => handleProfileChange('name', e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/90 text-white placeholder-slate-400 focus:border-primary-400 focus:outline-none transition-colors"
                   />
@@ -473,7 +459,7 @@ const SettingsPage = () => {
                   <label className="block text-sm font-medium text-slate-300">Role</label>
                   <input
                     type="text"
-                    value={profile.role}
+                    value={settings.profile.role}
                     onChange={(e) => handleProfileChange('role', e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/90 text-white placeholder-slate-400 focus:border-primary-400 focus:outline-none transition-colors"
                   />
@@ -483,7 +469,7 @@ const SettingsPage = () => {
                   <label className="block text-sm font-medium text-slate-300">Hospital</label>
                   <input
                     type="text"
-                    value={profile.hospital}
+                    value={settings.profile.hospital}
                     onChange={(e) => handleProfileChange('hospital', e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/90 text-white placeholder-slate-400 focus:border-primary-400 focus:outline-none transition-colors"
                   />
@@ -493,7 +479,7 @@ const SettingsPage = () => {
                   <label className="block text-sm font-medium text-slate-300">Email</label>
                   <input
                     type="email"
-                    value={profile.email}
+                    value={settings.profile.email}
                     onChange={(e) => handleProfileChange('email', e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/90 text-white placeholder-slate-400 focus:border-primary-400 focus:outline-none transition-colors"
                   />
@@ -527,14 +513,14 @@ const SettingsPage = () => {
                     <p className="text-slate-400 text-sm">Enable demo data and features</p>
                   </div>
                   <button
-                    onClick={() => handleAdminChange('demoMode', !adminSettings.demoMode)}
+                    onClick={() => handleAdminChange('demoMode', !settings.adminSettings.demoMode)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      adminSettings.demoMode ? 'bg-success-500' : 'bg-slate-600'
+                      settings.adminSettings.demoMode ? 'bg-success-500' : 'bg-slate-600'
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        adminSettings.demoMode ? 'translate-x-6' : 'translate-x-1'
+                        settings.adminSettings.demoMode ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>
@@ -546,14 +532,14 @@ const SettingsPage = () => {
                     <p className="text-slate-400 text-sm">Automatic data backups</p>
                   </div>
                   <button
-                    onClick={() => handleAdminChange('autoBackup', !adminSettings.autoBackup)}
+                    onClick={() => handleAdminChange('autoBackup', !settings.adminSettings.autoBackup)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      adminSettings.autoBackup ? 'bg-success-500' : 'bg-slate-600'
+                      settings.adminSettings.autoBackup ? 'bg-success-500' : 'bg-slate-600'
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        adminSettings.autoBackup ? 'translate-x-6' : 'translate-x-1'
+                        settings.adminSettings.autoBackup ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>
@@ -565,14 +551,14 @@ const SettingsPage = () => {
                     <p className="text-slate-400 text-sm">Put system in maintenance</p>
                   </div>
                   <button
-                    onClick={() => handleAdminChange('maintenanceMode', !adminSettings.maintenanceMode)}
+                    onClick={() => handleAdminChange('maintenanceMode', !settings.adminSettings.maintenanceMode)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      adminSettings.maintenanceMode ? 'bg-warning-500' : 'bg-slate-600'
+                      settings.adminSettings.maintenanceMode ? 'bg-warning-500' : 'bg-slate-600'
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        adminSettings.maintenanceMode ? 'translate-x-6' : 'translate-x-1'
+                        settings.adminSettings.maintenanceMode ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>
@@ -586,7 +572,7 @@ const SettingsPage = () => {
                     type="number"
                     min="30"
                     max="3650"
-                    value={adminSettings.dataRetention}
+                    value={settings.adminSettings.dataRetention}
                     onChange={(e) => handleAdminChange('dataRetention', parseInt(e.target.value))}
                     className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/90 text-white placeholder-slate-400 focus:border-primary-400 focus:outline-none transition-colors"
                   />

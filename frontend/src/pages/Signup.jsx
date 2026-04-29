@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus, User, Mail, Lock, Activity, Shield, Heart } from 'lucide-react';
+import { storeUser } from '../services/api';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -29,10 +30,10 @@ const Signup = () => {
     try {
       if (!form.username || !form.email || !form.password) {
         setError('Please fill in all fields');
+        setLoading(false);
         return;
       }
 
-      // For demo purposes, store user in localStorage
       const newUser = {
         username: form.username,
         email: form.email,
@@ -41,7 +42,7 @@ const Signup = () => {
         token: 'demo-token',
       };
 
-      localStorage.setItem('care-nest-user', JSON.stringify(newUser));
+      storeUser(newUser);
       navigate('/dashboard');
     } catch (err) {
       console.error('Signup failed:', err);

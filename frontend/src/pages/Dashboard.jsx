@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, TrendingUp, Users, Activity } from 'lucide-react';
-import { getHospitalStatus, getPrediction } from '../services/api';
+import { getHospitalStatus, getPrediction, getStoredUser } from '../services/api';
 import MetricCard from '../components/MetricCard';
 import AlertsPanel from '../components/AlertsPanel';
 import PredictionForm from '../components/PredictionForm';
@@ -15,6 +15,8 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [occupancy, setOccupancy] = useState(0);
   const navigate = useNavigate();
+  const user = getStoredUser();
+  const welcomeName = user?.username || user?.name || user?.email || 'CareNest User';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -150,7 +152,7 @@ const Dashboard = () => {
                 Hospital command center
               </p>
               <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-                CareNest Dashboard
+                Welcome back, {welcomeName}
               </h1>
               <p className="text-lg leading-8 text-slate-300">
                 Monitor hospital operations, view predicted load, and stay ahead of alerts with a calm, responsive command center.
