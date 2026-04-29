@@ -1,54 +1,54 @@
-# CareNest – AI-Powered Healthcare Monitoring System
+# CareNest — AI-Powered Healthcare Monitoring System
 
-## Description
+## Overview
+CareNest is a healthcare operations dashboard that monitors hospital resources, predicts patient load using AI, and supports proactive hospital management through alerts and reporting.
 
-CareNest is a smart healthcare dashboard designed to monitor hospital resources, predict patient load using AI, and generate alerts to help hospitals proactively manage emergencies.
-
-## Features
-
-- Real-time hospital status monitoring
+## Key Features
+- Real-time hospital resource monitoring
 - AI-based patient load prediction
-- Alert system (Critical / Warning / Normal)
-- Interactive dashboard UI
-- Settings and notification controls
-- Role-based system (in progress)
-- Report generation (in progress)
+- Risk level classification (Low / Medium / High)
+- Alerts and operational notifications
+- Dashboard pages for analytics, reports, and settings
+- Login and session handling
+- Report generation and export support
 
 ## Tech Stack
 
 ### Frontend
-- React (Vite)
+- React
+- Vite
 - Axios
 - React Router
+- JavaScript, HTML, CSS
 
 ### Backend
-- FastAPI (Python)
+- Python
+- FastAPI
+- Uvicorn
+- Pandas
 
-### AI
-- Random Forest (Scikit-learn)
-
-### Data
-- CSV dataset
+### AI / ML
+- Scikit-learn
+- Random Forest
+- Pickle / Joblib model serialization
 
 ## API Endpoints
-
 - GET /hospital-status
 - POST /predict
 - GET /alerts
-- POST /login (basic implementation)
+- GET /generate-report
+- POST /login
 
-## Setup Instructions
+## Installation
 
-### Backend Setup
-
+### Backend
 ```bash
 cd backend
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8001
 ```
 
-### Frontend Setup
-
+### Frontend
 ```bash
 cd frontend
 npm install
@@ -83,17 +83,19 @@ InnoHub_CareNest/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── MetricCard.jsx
+│   │   │   ├── AlertCard.jsx
 │   │   │   ├── AlertsPanel.jsx
-│   │   │   └── PredictionForm.jsx
+│   │   │   ├── MetricCard.jsx
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── PredictionForm.jsx
+│   │   │   └── RecommendationCard.jsx
 │   │   ├── pages/
+│   │   │   ├── Analytics.jsx
 │   │   │   ├── Dashboard.jsx
 │   │   │   ├── Login.jsx
-│   │   │   ├── Signup.jsx
+│   │   │   ├── Reports.jsx
 │   │   │   ├── Settings.jsx
-│   │   │   ├── Analytics.jsx
-│   │   │   └── Reports.jsx
+│   │   │   └── Signup.jsx
 │   │   ├── services/
 │   │   │   └── api.js
 │   │   ├── charts/
@@ -108,23 +110,28 @@ InnoHub_CareNest/
 ```
 
 ## Current Status
+CareNest is implemented as a stable minimum viable product with full backend and frontend integration. Core functionality is complete and the system is ready for demonstration.
 
-- ✅ Backend fully functional with AI integration
-- ✅ Frontend UI completed with dashboard, settings, and login
-- ⚠️ Frontend-backend integration in progress
-- ⚠️ Authentication system being implemented
-- ❌ Advanced features pending (reports, analytics)
+### Status Summary
+- ✅ Backend implemented and operational
+- ✅ AI prediction integrated
+- ✅ Frontend dashboard completed
+- ✅ API integration between frontend and backend
+- ✅ Core reports and alerts workflow functional
+- ⚠️ Additional enhancements remain for production polish
+
+## Next Steps
+- Improve analytics visualization
+- Enhance authentication and role-based access
+- Add additional report formats and export options
+- Refine UI responsiveness and production readiness
 
 ## Contributing
-
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
+3. Make updates
+4. Test changes
 5. Submit a pull request
 
 ## License
-
-This project is developed for the InnoHub Hackathon.
-
-**Made with ❤️ by InnoHub Team**
+This repository is developed for the InnoHub project.
