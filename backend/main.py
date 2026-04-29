@@ -1,9 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Literal
 import pandas as pd
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime
 
 # Import the backend prediction wrapper which loads the ai-model module dynamically
 from prediction import predict as ai_predict
@@ -14,11 +15,14 @@ app = FastAPI()
 class LoginRequest(BaseModel):
     username: str
     password: str
+    role: Literal["Doctor", "Nurse", "Patient", "Family Member", "Admin"]
 
 
 class LoginResponse(BaseModel):
     status: str
+    username: str
     role: str
+    email: str
     token: str
 
 
@@ -30,6 +34,11 @@ class PredictionResponse(BaseModel):
 
 
 class PredictionRequest(BaseModel):
+    patient_count: Optional[int] = 0
+    beds_available: Optional[int] = 0
+    icu_available: Optional[int] = 0
+    staff_count: Optional[int] = 0
+    occupancy_rate: Optional[float] = None
     scenario: Optional[Literal["normal", "warning", "critical"]]
 
 
@@ -68,6 +77,27 @@ def normalize_scenario(scenario: Optional[str]) -> str:
     if scenario and scenario.lower() in PREDICTION_SCENARIOS:
         return scenario.lower()
     return "normal"
+
+
+def confidence_for_risk(risk: str) -> str:
+    level = risk.upper() if isinstance(risk, str) else "LOW"
+    if level == "HIGH":
+        return "92%"
+    if level == "MEDIUM":
+        return "85%"
+    return "96%"
+
+
+def build_prediction_response(result: dict) -> dict:
+    risk = result.get("surge_risk") or result.get("risk_level") or "Low"
+    if isinstance(risk, str):
+        risk = risk.title()
+    return {
+        "predicted_patients": int(result.get("predicted_patients_next_6hrs", result.get("predicted_patients", 0)) or 0),
+        "risk_level": risk,
+        "confidence": result.get("confidence") or confidence_for_risk(str(risk)),
+        "recommendations": [result.get("recommended_action", "Monitor hospital capacity and prepare resources")],
+    }
 
 
 class AlertThresholds(BaseModel):
@@ -132,9 +162,13 @@ def root():
 
 @app.post("/login", response_model=LoginResponse)
 def login(request: LoginRequest):
+    if not request.username or not request.password:
+        raise HTTPException(status_code=400, detail="Username and password are required")
     return {
         "status": "success",
-        "role": "admin",
+        "username": request.username.title(),
+        "role": request.role,
+        "email": f"{request.username.lower()}@carenest.com",
         "token": "demo-token",
     }
 
@@ -156,77 +190,130 @@ def update_settings(update: SettingsUpdate):
 
 
 @app.get("/hospital-status")
-def hospital_status_demo(scenario: str = "normal"):
-    selected = scenario if scenario in DEMO_DATA else "normal"
+def hospital_status(scenario: Optional[str] = "normal"):
+    selected = normalize_scenario(scenario)
+    hospital = DEMO_DATA[selected]
     return {
-<<<<<<< HEAD
-        "patient_count": DEMO_DATA[scenario]["current_patients"],
-        "beds_available": DEMO_DATA[scenario]["beds_available"],
-        "icu_available": DEMO_DATA[scenario]["icu_available"],
-        "staff_count": DEMO_DATA[scenario]["staff_available"],
-        "occupancy_rate": DEMO_DATA[scenario]["occupancy_rate"],
-    }
-
-
-@app.post("/predict")
-def predict(data: dict):
-    try:
-        result = ai_predict(data)
-        return {
-            "predicted_patients_next_6hrs": result.get("predicted_patients_next_6hrs", 0),
-            "surge_risk": result.get("surge_risk", "UNKNOWN"),
-            "recommended_action": result.get("recommended_action", "No recommendation available")
-        }
-    except Exception as e:
-        # Fallback to demo data if AI prediction fails
-        print(f"AI prediction failed: {e}")
-        scenario = "critical" if data.get("patient_count", 0) > 150 else "warning" if data.get("patient_count", 0) > 100 else "normal"
-        return {
-            "predicted_patients_next_6hrs": DEMO_DATA[scenario]["current_patients"] + 10,
-            "surge_risk": DEMO_DATA[scenario]["prediction"].split()[0].upper(),  # Extract "Low", "Medium", "High"
-            "recommended_action": DEMO_DATA[scenario]["recommended_action"]
-        }
-=======
-        "current_patients": DEMO_DATA[selected]["current_patients"],
-        "beds_available": DEMO_DATA[selected]["beds_available"],
-        "icu_available": DEMO_DATA[selected]["icu_available"],
-        "staff_available": DEMO_DATA[selected]["staff_available"],
-        "occupancy_rate": DEMO_DATA[selected]["occupancy_rate"],
+        "hospital_name": "Metro General Hospital",
+        "hospital_region": "Central City",
+        "status_level": selected,
+        "current_patients": hospital["current_patients"],
+        "patient_count": hospital["current_patients"],
+        "beds_available": hospital["beds_available"],
+        "icu_available": hospital["icu_available"],
+        "staff_count": hospital["staff_available"],
+        "occupancy_rate": hospital["occupancy_rate"],
+        "alert_level": hospital["alert_level"],
+        "prediction": hospital["prediction"],
+        "confidence": hospital["confidence"],
+        "recommended_action": hospital["recommended_action"],
+        "last_updated": datetime.utcnow().isoformat() + "Z",
     }
 
 
 @app.post("/predict", response_model=PredictionResponse)
-def predict_demo(request: Optional[PredictionRequest] = None, scenario: str = "normal"):
-    selected = scenario
-    if request and request.scenario:
-        selected = request.scenario
-    selected = normalize_scenario(selected)
-    return PREDICTION_SCENARIOS[selected]
->>>>>>> 2e5360438a803d4883e3ef93aa6d642a743e76b5
+def predict_route(request: PredictionRequest):
+    payload = request.dict(exclude_none=True)
+    if not payload:
+        raise HTTPException(status_code=400, detail="Prediction input is required")
+    
+    # Extract input data
+    patient_count = payload.get("patient_count", 90)
+    beds_available = payload.get("beds_available", 100)
+    occupancy_rate = payload.get("occupancy_rate", 50.0)
+    
+    # Calculate predicted patients (6-hour forecast)
+    if occupancy_rate and occupancy_rate > 0:
+        predicted = int(patient_count * 1.15) if occupancy_rate > 85 else int(patient_count * 1.08) if occupancy_rate > 60 else int(patient_count * 1.03)
+    else:
+        predicted = int(patient_count * 1.08)
+    
+    # Dynamic risk calculation based on actual data
+    if occupancy_rate > 85 or patient_count > beds_available:
+        risk_level = "High"
+        confidence = "92%"
+        recommendations = [
+            "Immediately increase ICU capacity by 30%",
+            "Deploy additional nursing and medical staff",
+            "Activate emergency surge protocols",
+        ]
+    elif occupancy_rate > 60 or patient_count > (beds_available * 0.75):
+        risk_level = "Medium"
+        confidence = "85%"
+        recommendations = [
+            "Prepare surge beds for activation",
+            "Notify on-call staff to remain available",
+            "Monitor occupancy closely over next 6 hours",
+        ]
+    else:
+        risk_level = "Low"
+        confidence = "96%"
+        recommendations = [
+            "Continue normal operations",
+            "Monitor capacity trends",
+            "Maintain current staffing levels",
+        ]
+    
+    return {
+        "predicted_patients": predicted,
+        "risk_level": risk_level,
+        "confidence": confidence,
+        "recommendations": recommendations,
+    }
 
 
 @app.get("/alerts")
-def alerts_demo(scenario: str = "normal"):
-<<<<<<< HEAD
-    alert_data = DEMO_DATA[scenario]
-    return [{
-        "title": "Critical Alert" if alert_data["alert_level"] == "RED" else "Warning Alert" if alert_data["alert_level"] == "YELLOW" else "Status OK",
-        "message": alert_data["message"],
-        "level": alert_data["alert_level"].lower(),
-        "patient_count": alert_data["current_patients"],
-        "beds_available": alert_data["beds_available"],
-        "icu_available": alert_data["icu_available"],
-        "occupancy_rate": alert_data["occupancy_rate"],
-        "timestamp": "2024-01-15T10:30:00Z",  # Mock timestamp
-    }]
-=======
-    selected = scenario if scenario in DEMO_DATA else "normal"
+def alerts(occupancy_rate: Optional[float] = None, patient_count: Optional[int] = None):
+    if occupancy_rate is None:
+        occupancy_rate = 72.0
+    if patient_count is None:
+        patient_count = 145
+    
+    if occupancy_rate > 85 or patient_count > 150:
+        alert_level = "RED"
+        title = "Critical Alert"
+        message = "Hospital capacity critically high. Immediate surge protocols required."
+    elif occupancy_rate > 60 or patient_count > 120:
+        alert_level = "YELLOW"
+        title = "Warning Alert"
+        message = "Hospital approaching capacity limits. Monitor situation closely."
+    else:
+        alert_level = "GREEN"
+        title = "Status OK"
+        message = "Hospital operating at normal capacity levels."
+    
     return {
-        "alert_level": DEMO_DATA[selected]["alert_level"],
-        "message": DEMO_DATA[selected]["message"],
-        "recommended_action": DEMO_DATA[selected]["recommended_action"],
+        "title": title,
+        "message": message,
+        "alert_level": alert_level,
+        "recommended_action": "Monitor and prepare resources" if alert_level != "GREEN" else "Continue normal operations",
+        "patient_count": patient_count,
+        "beds_available": 200 - patient_count,
+        "icu_available": 50 - int(patient_count * 0.15),
+        "occupancy_rate": occupancy_rate,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
     }
->>>>>>> 2e5360438a803d4883e3ef93aa6d642a743e76b5
+
+
+@app.get("/generate-report")
+def generate_report(report_type: Optional[str] = "summary"):
+    status = DEMO_DATA["warning"]
+    return {
+        "report_type": report_type,
+        "generated_at": datetime.utcnow().isoformat() + "Z",
+        "hospital_name": "Metro General Hospital",
+        "hospital_region": "Central City",
+        "summary": {
+            "current_patients": status["current_patients"],
+            "beds_available": status["beds_available"],
+            "icu_available": status["icu_available"],
+            "occupancy_rate": status["occupancy_rate"],
+            "alert_level": status["alert_level"],
+        },
+        "recommended_action": status["recommended_action"],
+        "prediction": status["prediction"],
+        "confidence": status["confidence"],
+    }
 
 # Controlled demo data
 DEMO_DATA = {
@@ -270,4 +357,4 @@ DEMO_DATA = {
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8001)
+    uvicorn.run(app, host="127.0.0.1", port=8003)

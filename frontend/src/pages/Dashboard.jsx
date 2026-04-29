@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, TrendingUp, Users, Activity } from 'lucide-react';
 import { getHospitalStatus, getPrediction } from '../services/api';
 import MetricCard from '../components/MetricCard';
@@ -12,6 +13,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState('');
+  const [occupancy, setOccupancy] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,6 +23,9 @@ const Dashboard = () => {
       try {
         const status = await getHospitalStatus();
         setHospitalData(status);
+        // Initialize occupancy
+        const initialOccupancy = ((status?.current_patients ?? status?.patient_count ?? 0) / (status?.beds_available ?? 100) * 100).toFixed(2);
+        setOccupancy(initialOccupancy);
       } catch (err) {
         setError('Unable to load hospital dashboard data. Please try again later.');
       } finally {
@@ -30,24 +36,50 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  const handleAnalyze = async () => {
+  const updateOccupancy = (predictedPatients) => {
+    const totalBeds = hospitalData?.beds_available ?? 100;
+    const newOccupancy = ((predictedPatients / totalBeds) * 100).toFixed(2);
+    console.log(`Updating occupancy: ${predictedPatients} patients / ${totalBeds} beds = ${newOccupancy}%`);
+    setOccupancy(newOccupancy);
+  };
+
+  const handlePrediction = async () => {
     setAnalyzing(true);
     setError('');
     try {
       const payload = {
-        patient_count: hospitalData?.patient_count ?? 134,
+        current_patients: hospitalData?.current_patients ?? hospitalData?.patient_count ?? 134,
+        patient_count: hospitalData?.patient_count ?? hospitalData?.current_patients ?? 134,
         icu_available: hospitalData?.icu_available ?? (hospitalData?.icu_usage ? 100 - hospitalData.icu_usage : 20),
         beds_available: hospitalData?.beds_available ?? 88,
-        staff_count: hospitalData?.staff_count ?? 38,
-        occupancy_rate: hospitalData?.occupancy_rate,
+        staff_available: hospitalData?.staff_available ?? hospitalData?.staff_count ?? 38,
+        staff_count: hospitalData?.staff_count ?? hospitalData?.staff_available ?? 38,
+        occupancy_rate: hospitalData?.occupancy_rate ?? 72,
       };
+
+      console.log('Sending prediction payload:', payload);
       const result = await getPrediction(payload);
+      console.log('Prediction Response:', result);
+
       setPrediction(result);
+
+      // Update occupancy dynamically
+      if (result?.predicted_patients) {
+        updateOccupancy(result.predicted_patients);
+      }
+
     } catch (err) {
+      console.error('Prediction Error:', err);
       setError('Prediction service failed. Please check your backend connection.');
     } finally {
       setAnalyzing(false);
     }
+  };
+
+  const handleMetricCardClick = (card) => {
+    const cardName = card.title || 'metric';
+    console.log(`Metric card clicked: ${cardName}`);
+    navigate('/analytics');
   };
 
   const metricCards = useMemo(() => {
@@ -126,14 +158,14 @@ const Dashboard = () => {
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <button
-                onClick={handleAnalyze}
+                onClick={handlePrediction}
                 disabled={analyzing || !hospitalData}
                 className="inline-flex items-center justify-center rounded-full bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-slate-950/10 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300"
               >
                 {analyzing ? 'Analyzing...' : 'Run Prediction'}
               </button>
               <div className="rounded-full border border-white/10 bg-slate-950/80 px-6 py-3 text-center text-sm text-slate-300">
-                Occupancy {hospitalData ? `${hospitalData.occupancy_rate}%` : '—'}
+                Occupancy {occupancy}%
               </div>
             </div>
           </div>
@@ -162,7 +194,12 @@ const Dashboard = () => {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
               {metricCards.map((card, index) => (
-                <MetricCard key={card.title} {...card} delay={index * 0.05} />
+                <MetricCard
+                  key={card.title}
+                  {...card}
+                  delay={index * 0.05}
+                  onClick={() => handleMetricCardClick(card)}
+                />
               ))}
             </div>
           )}
@@ -190,7 +227,7 @@ const Dashboard = () => {
                 <div className="rounded-3xl bg-slate-950/80 p-5">
                   <p className="text-sm text-slate-400">Predicted risk level</p>
                   <p className="mt-3 text-4xl font-semibold text-white">{prediction?.risk_level?.toUpperCase() || 'PENDING'}</p>
-                  <p className="mt-2 text-sm text-slate-500">Confidence {prediction?.confidence ? `${Math.round(prediction.confidence * 100)}%` : '—'}</p>
+                  <p className="mt-2 text-sm text-slate-500">Confidence {prediction?.confidence || '—'}</p>
                 </div>
                 <div className="rounded-3xl bg-slate-950/80 p-5">
                   <p className="text-sm text-slate-400">Top recommendations</p>

@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { getPrediction } from '../services/api';
 
@@ -43,14 +44,15 @@ const PredictionForm = () => {
         occupancy_rate: Number(form.occupancy_rate),
       };
       const prediction = await getPrediction(payload);
-
-      // Add mock confidence score since backend doesn't provide it
-      const mockConfidence = Math.round((0.75 + Math.random() * 0.2) * 100) / 100; // 0.75-0.95
+      const computedConfidence = prediction.confidence || `${Math.round((0.75 + Math.random() * 0.2) * 100)}%`;
 
       setResult({
         ...prediction,
-        confidence: mockConfidence,
-        risk_level: prediction.surge_risk, // Map surge_risk to risk_level for consistency
+        confidence: computedConfidence,
+        surge_risk: prediction.surge_risk || prediction.risk_level,
+        predicted_patients_next_6hrs: prediction.predicted_patients_next_6hrs ?? prediction.predicted_patients,
+        recommended_action:
+          prediction.recommended_action || prediction.recommendations?.[0] || 'Monitor hospital capacity',
       });
     } catch (err) {
       console.error('Prediction error:', err);

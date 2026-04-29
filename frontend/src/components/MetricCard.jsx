@@ -9,7 +9,8 @@ const MetricCard = ({
   trend,
   trendValue,
   color = 'primary',
-  delay = 0
+  delay = 0,
+  onClick,
 }) => {
   const getColorClasses = (color) => {
     const colors = {
@@ -73,11 +74,14 @@ const MetricCard = ({
 
   return (
     <motion.div
-      className={`relative overflow-hidden rounded-2xl ${colors.lightBg} border ${colors.border} p-6 shadow-lg hover:shadow-xl transition-shadow duration-300`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      className={`relative overflow-hidden rounded-2xl ${colors.lightBg} border ${colors.border} p-6 shadow-lg transition-shadow duration-300 ${onClick ? 'cursor-pointer hover:shadow-xl' : 'hover:shadow-xl'}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay }}
-      whileHover={{ y: -2 }}
+      whileHover={{ y: onClick ? -2 : 0 }}
     >
       {/* Background Pattern */}
       <div className="absolute top-0 right-0 w-20 h-20 opacity-5">

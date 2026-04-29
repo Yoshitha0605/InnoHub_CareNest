@@ -1,9 +1,25 @@
 import { motion } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
-import { Activity, Bell, Settings, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Activity, Bell, Settings, User, LogOut } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState('User');
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('care-nest-user');
+      if (raw) {
+        const stored = JSON.parse(raw);
+        setDisplayName(stored.username || stored.role || 'CareNest User');
+      }
+    } catch {
+      // ignore invalid stored user
+    }
+  }, []);
 
   const navigationItems = [
     { name: 'Dashboard', path: '/' },
@@ -11,6 +27,15 @@ const Navbar = () => {
     { name: 'Reports', path: '/reports' },
     { name: 'Settings', path: '/settings' },
   ];
+
+  const handleNotificationClick = () => {
+    setShowNotifications((prev) => !prev);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('care-nest-user');
+    navigate('/login');
+  };
 
   return (
     <motion.nav
@@ -64,29 +89,43 @@ const Navbar = () => {
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <motion.button
-              className="relative p-2 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-danger-500 rounded-full border-2 border-white"></span>
-            </motion.button>
-
-            {/* Settings */}
-            <Link to="/settings">
+            <div className="relative">
               <motion.button
-                className="p-2 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200"
+                onClick={handleNotificationClick}
+                className="relative p-2 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Settings className="w-5 h-5" />
+                <Bell className="w-5 h-5" />
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-danger-500 rounded-full border-2 border-white"></span>
               </motion.button>
-            </Link>
+              {showNotifications && (
+                <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl z-50">
+                  <div className="p-4">
+                    <p className="text-sm font-semibold text-slate-900">Notifications</p>
+                    <p className="mt-2 text-sm text-slate-600">You have new updates from hospital monitoring and predictions.</p>
+                  </div>
+                  <div className="border-t border-slate-200 px-4 py-3 text-sm text-slate-600">
+                    3 alerts waiting - click to review in the dashboard.
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Settings */}
+            <motion.button
+              onClick={() => navigate('/settings')}
+              className="p-2 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Settings className="w-5 h-5" />
+            </motion.button>
 
             {/* User Profile */}
-            <Link to="/login">
+            <div className="relative">
               <motion.button
+                onClick={() => setShowNotifications(prev => !prev)} // Reuse showNotifications for user menu
                 className="flex items-center space-x-2 p-2 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -94,9 +133,27 @@ const Navbar = () => {
                 <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
                   <User className="w-4 h-4 text-white" />
                 </div>
-                <span className="hidden sm:block text-sm font-medium">Dr. Smith</span>
+                <span className="hidden sm:block text-sm font-medium">{displayName}</span>
               </motion.button>
-            </Link>
+
+              {showNotifications && (
+                <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl z-50">
+                  <div className="p-4">
+                    <p className="text-sm font-semibold text-slate-900">{displayName}</p>
+                    <p className="text-xs text-slate-600">CareNest User</p>
+                  </div>
+                  <div className="border-t border-slate-200">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 rounded-b-2xl"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

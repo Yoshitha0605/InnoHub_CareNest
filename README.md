@@ -2,35 +2,40 @@
 
 ## Description
 
-CareNest is a smart healthcare dashboard that predicts patient load, monitors hospital resources, and generates alerts to help hospitals prepare for emergencies.
+CareNest is a smart healthcare dashboard designed to monitor hospital resources, predict patient load using AI, and generate alerts to help hospitals proactively manage emergencies.
 
 ## Features
 
 - Real-time hospital status monitoring
 - AI-based patient load prediction
-- Alert system (critical, warning, normal)
+- Alert system (Critical / Warning / Normal)
 - Interactive dashboard UI
-- FastAPI backend with ML integration
+- Settings and notification controls
+- Role-based system (in progress)
+- Report generation (in progress)
 
 ## Tech Stack
 
-- Frontend: React (Vite)
-- Backend: FastAPI
-- AI Model: Random Forest (Scikit-learn)
-- Data: CSV dataset
+### Frontend
+- React (Vite)
+- Axios
+- React Router
 
-## APIs
+### Backend
+- FastAPI (Python)
 
-- `GET /hospital-status`
-- `POST /predict`
-- `GET /alerts`
+### AI
+- Random Forest (Scikit-learn)
 
-## Current Status
+### Data
+- CSV dataset
 
-- Backend fully functional
-- AI integration complete
-- Frontend UI completed
-- Partial frontend functionality (ongoing improvements)
+## API Endpoints
+
+- GET /hospital-status
+- POST /predict
+- GET /alerts
+- POST /login (basic implementation)
 
 ## Setup Instructions
 
@@ -39,7 +44,15 @@ CareNest is a smart healthcare dashboard that predicts patient load, monitors ho
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8002
+uvicorn main:app --reload --port 8001
+```
+
+### Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
 ## Project Structure
@@ -69,6 +82,24 @@ InnoHub_CareNest/
 │       └── processing.py
 ├── frontend/
 │   ├── src/
+│   │   ├── components/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── MetricCard.jsx
+│   │   │   ├── AlertsPanel.jsx
+│   │   │   └── PredictionForm.jsx
+│   │   ├── pages/
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── Signup.jsx
+│   │   │   ├── Settings.jsx
+│   │   │   ├── Analytics.jsx
+│   │   │   └── Reports.jsx
+│   │   ├── services/
+│   │   │   └── api.js
+│   │   ├── charts/
+│   │   │   └── PatientLoadChart.jsx
+│   │   ├── App.jsx
+│   │   └── main.jsx
 │   ├── public/
 │   ├── package.json
 │   └── vite.config.js
@@ -76,4 +107,24 @@ InnoHub_CareNest/
 └── README.md
 ```
 
-**Made with ❤️ by InnoHub for the Hackathon**
+## Current Status
+
+- ✅ Backend fully functional with AI integration
+- ✅ Frontend UI completed with dashboard, settings, and login
+- ⚠️ Frontend-backend integration in progress
+- ⚠️ Authentication system being implemented
+- ❌ Advanced features pending (reports, analytics)
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is developed for the InnoHub Hackathon.
+
+**Made with ❤️ by InnoHub Team**

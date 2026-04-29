@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getSettings, updateSettings } from '../services/api';
 import {
   Settings,
   Bell,
@@ -17,7 +18,8 @@ import {
   Eye,
   EyeOff,
   Crown,
-  Activity
+  Activity,
+  CheckCircle
 } from 'lucide-react';
 
 const SettingsPage = () => {
@@ -35,10 +37,10 @@ const SettingsPage = () => {
     maintenanceAlerts: false,
   });
   const [profile, setProfile] = useState({
-    name: 'Dr. Sarah Johnson',
-    role: 'Chief Medical Officer',
+    name: '',
+    role: '',
     hospital: 'Metro General Hospital',
-    email: 'sarah.johnson@metrogeneral.com',
+    email: '',
   });
   const [adminSettings, setAdminSettings] = useState({
     demoMode: true,
@@ -47,10 +49,72 @@ const SettingsPage = () => {
     maintenanceMode: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [settingsStatus, setSettingsStatus] = useState('');
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMsg, setNotificationMsg] = useState('');
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const settings = await getSettings();
+        setTheme(settings.theme_mode || 'dark');
+        // Apply theme to document
+        document.documentElement.classList.toggle('dark', settings.theme_mode === 'dark');
+        setAlertThresholds(prev => ({
+          ...prev,
+          patientCapacity: settings.alert_thresholds?.patient_count ?? prev.patientCapacity,
+          icuUsage: settings.alert_thresholds?.icu_usage ?? prev.icuUsage,
+        }));
+        setNotifications(prev => ({
+          ...prev,
+          emailAlerts: settings.notification_preferences?.email ?? prev.emailAlerts,
+          smsAlerts: settings.notification_preferences?.sms ?? prev.smsAlerts,
+          pushNotifications: settings.notification_preferences?.push ?? prev.pushNotifications,
+        }));
+      } catch (err) {
+        console.error('Unable to load settings', err);
+      }
+    };
+
+    // Load user data from localStorage
+    try {
+      const userData = localStorage.getItem('care-nest-user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        setProfile(prev => ({
+          ...prev,
+          name: user.username || '',
+          role: user.role || '',
+          email: user.email || '',
+        }));
+      }
+    } catch (err) {
+      console.error('Unable to load user data', err);
+    }
+
+    // Load settings from localStorage
+    try {
+      const savedSettings = localStorage.getItem('hospital-settings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        setTheme(parsed.theme || 'dark');
+        setAlertThresholds(parsed.alertThresholds || alertThresholds);
+        setNotifications(parsed.notifications || notifications);
+        setAdminSettings(parsed.adminSettings || adminSettings);
+        document.documentElement.classList.toggle('dark', parsed.theme === 'dark');
+      }
+    } catch (err) {
+      console.error('Unable to load saved settings', err);
+    }
+
+    loadSettings();
+  }, []);
 
   const handleThemeToggle = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-    // In a real app, this would update the global theme context
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    localStorage.setItem('app-theme', newTheme);
   };
 
   const handleThresholdChange = (key, value) => {
@@ -65,6 +129,18 @@ const SettingsPage = () => {
       ...prev,
       [key]: value
     }));
+
+    // Show notification alert
+    const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    setNotificationMsg(`${label} ${value ? 'enabled' : 'disabled'}`);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 2000);
+  };
+
+  const handleNotificationTest = (type) => {
+    setNotificationMsg(`${type} notification test sent!`);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
   };
 
   const handleProfileChange = (key, value) => {
@@ -81,16 +157,69 @@ const SettingsPage = () => {
     }));
   };
 
-  const handleSave = () => {
-    // In a real app, this would save to backend
-    console.log('Settings saved:', {
-      theme,
-      alertThresholds,
-      notifications,
-      profile,
-      adminSettings
-    });
-    // Show success message
+  const handleReset = () => {
+    const defaultSettings = {
+      theme: 'dark',
+      alertThresholds: {
+        patientCapacity: 85,
+        icuUsage: 90,
+        staffShortage: 20,
+      },
+      notifications: {
+        emailAlerts: true,
+        smsAlerts: false,
+        pushNotifications: true,
+        criticalAlerts: true,
+        maintenanceAlerts: false,
+      },
+      adminSettings: {
+        demoMode: true,
+        dataRetention: 365,
+        autoBackup: true,
+        maintenanceMode: false,
+      },
+    };
+
+    setTheme(defaultSettings.theme);
+    setAlertThresholds(defaultSettings.alertThresholds);
+    setNotifications(defaultSettings.notifications);
+    setAdminSettings(defaultSettings.adminSettings);
+
+    localStorage.setItem('hospital-settings', JSON.stringify(defaultSettings));
+    setSettingsStatus('✓ Settings reset to defaults.');
+    setTimeout(() => setSettingsStatus(''), 3500);
+  };
+
+  const handleSave = async () => {
+    try {
+      const saved = await updateSettings({
+        theme_mode: theme,
+        alert_thresholds: {
+          patient_count: alertThresholds.patientCapacity,
+          icu_usage: alertThresholds.icuUsage,
+          occupancy_rate: 0,
+        },
+        notification_preferences: {
+          email: notifications.emailAlerts,
+          sms: notifications.smsAlerts,
+          push: notifications.pushNotifications,
+        },
+      });
+      console.log('Settings saved:', saved);
+      setSettingsStatus('✓ Settings updated successfully.');
+      localStorage.setItem('hospital-settings', JSON.stringify({
+        theme,
+        alertThresholds,
+        notifications,
+        profile,
+        adminSettings,
+      }));
+      setTimeout(() => setSettingsStatus(''), 3500);
+    } catch (err) {
+      console.error('Error saving settings', err);
+      setSettingsStatus('✗ Unable to save settings. Please try again.');
+      setTimeout(() => setSettingsStatus(''), 4000);
+    }
   };
 
   return (
@@ -115,7 +244,7 @@ const SettingsPage = () => {
                 Configure system preferences, notification settings, security options, and customize your CareNest experience.
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3">
               <button
                 onClick={handleSave}
                 className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:shadow-xl hover:scale-[1.02]"
@@ -123,6 +252,19 @@ const SettingsPage = () => {
                 <Save className="w-4 h-4 mr-2" />
                 Save Changes
               </button>
+              {settingsStatus && (
+                <p className="text-sm text-slate-300">{settingsStatus}</p>
+              )}
+              {showNotification && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="p-3 rounded-lg bg-primary-500/20 border border-primary-500/30 text-primary-100 text-sm"
+                >
+                  {notificationMsg}
+                </motion.div>
+              )}
             </div>
           </div>
         </motion.header>
@@ -450,7 +592,10 @@ const SettingsPage = () => {
                   />
                 </div>
 
-                <button className="w-full inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:shadow-xl hover:scale-[1.02]">
+                <button
+                  onClick={handleReset}
+                  className="w-full inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:shadow-xl hover:scale-[1.02]"
+                >
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Reset to Defaults
                 </button>
