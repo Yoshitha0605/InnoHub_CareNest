@@ -148,13 +148,21 @@ const Dashboard = ({ theme }) => {
         <header className={`rounded-[2rem] border ${theme === 'dark' ? 'border-white/10 bg-slate-900/90' : 'border-slate-200 bg-white/90'} p-8 shadow-2xl ${theme === 'dark' ? 'shadow-slate-950/40' : 'shadow-slate-200/40'} backdrop-blur-xl`}>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl space-y-3">
-              <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+              <p className={`inline-flex rounded-full border px-4 py-2 text-sm ${
+                theme === 'dark'
+                  ? 'border-white/10 bg-white/5 text-slate-200'
+                  : 'border-slate-300 bg-slate-100 text-slate-700'
+              }`}>
                 Hospital command center
               </p>
-              <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+              <h1 className={`text-4xl font-semibold tracking-tight sm:text-5xl hero-text ${
+                theme === 'dark' ? 'text-white' : 'text-slate-900'
+              }`}>
                 Welcome back, {welcomeName}
               </h1>
-              <p className="text-lg leading-8 text-slate-300">
+              <p className={`text-lg leading-8 hero-text ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Monitor hospital operations, view predicted load, and stay ahead of alerts with a calm, responsive command center.
               </p>
             </div>
@@ -162,11 +170,19 @@ const Dashboard = ({ theme }) => {
               <button
                 onClick={handlePrediction}
                 disabled={analyzing || !hospitalData}
-                className="inline-flex items-center justify-center rounded-full bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-slate-950/10 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300"
+                className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold shadow-lg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  theme === 'dark'
+                    ? 'bg-slate-100 text-slate-950 shadow-slate-950/10 hover:bg-slate-200 disabled:bg-slate-600 disabled:text-slate-300'
+                    : 'bg-slate-900 text-white shadow-slate-900/10 hover:bg-slate-800 disabled:bg-slate-400 disabled:text-slate-600'
+                }`}
               >
                 {analyzing ? 'Analyzing...' : 'Run Prediction'}
               </button>
-              <div className="rounded-full border border-white/10 bg-slate-950/80 px-6 py-3 text-center text-sm text-slate-300">
+              <div className={`rounded-full border px-6 py-3 text-center text-sm ${
+                theme === 'dark'
+                  ? 'border-white/10 bg-slate-950/80 text-slate-300'
+                  : 'border-slate-300 bg-white/80 text-slate-700'
+              }`}>
                 Occupancy {occupancy}%
               </div>
             </div>
@@ -181,16 +197,26 @@ const Dashboard = ({ theme }) => {
           )}
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-500">Hospital Status Dashboard</p>
-              <h2 className="mt-3 text-3xl font-semibold text-white">Current operational metrics</h2>
+              <p className={`text-sm uppercase tracking-[0.35em] ${
+                theme === 'dark' ? 'text-slate-500' : 'text-slate-600'
+              }`}>Hospital Status Dashboard</p>
+              <h2 className={`mt-3 text-3xl font-semibold ${
+                theme === 'dark' ? 'text-white' : 'text-slate-900'
+              }`}>Current operational metrics</h2>
             </div>
-            <p className="max-w-xl text-sm text-slate-400">
+            <p className={`max-w-xl text-sm ${
+              theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+            }`}>
               A clean summary of patient load, bed and ICU availability, staffing, and overall occupancy at a glance.
             </p>
           </div>
 
           {loading ? (
-            <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-10 text-center text-slate-400">
+            <div className={`rounded-3xl border p-10 text-center ${
+              theme === 'dark'
+                ? 'border-slate-800 bg-slate-950/80 text-slate-400'
+                : 'border-slate-300 bg-slate-100/80 text-slate-600'
+            }`}>
               Loading hospital status...
             </div>
           ) : (
@@ -248,7 +274,7 @@ const Dashboard = ({ theme }) => {
           </div>
         </section>
 
-        <AlertsPanel />
+        <AlertsPanel theme={theme} />
       </div>
     </div>
   );

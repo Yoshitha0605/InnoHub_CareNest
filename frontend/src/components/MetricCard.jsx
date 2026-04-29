@@ -11,6 +11,7 @@ const MetricCard = ({
   color = 'primary',
   delay = 0,
   onClick,
+  theme = 'dark',
 }) => {
   const getColorClasses = (color) => {
     const colors = {
@@ -77,7 +78,11 @@ const MetricCard = ({
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`relative overflow-hidden rounded-2xl ${colors.lightBg} border ${colors.border} p-6 shadow-lg transition-shadow duration-300 ${onClick ? 'cursor-pointer hover:shadow-xl' : 'hover:shadow-xl'}`}
+      className={`relative overflow-hidden rounded-2xl p-6 shadow-lg transition-shadow duration-300 ${
+        theme === 'dark'
+          ? `${colors.lightBg} border ${colors.border}`
+          : 'bg-white border border-slate-200'
+      } ${onClick ? 'cursor-pointer hover:shadow-xl' : 'hover:shadow-xl'}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay }}
