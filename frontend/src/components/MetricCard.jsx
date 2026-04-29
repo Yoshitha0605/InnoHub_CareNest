@@ -11,6 +11,7 @@ const MetricCard = ({
   color = 'primary',
   delay = 0,
   onClick,
+  theme = 'dark',
 }) => {
   const getColorClasses = (color) => {
     const colors = {
@@ -77,7 +78,11 @@ const MetricCard = ({
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`relative overflow-hidden rounded-2xl ${colors.lightBg} border ${colors.border} p-6 shadow-lg transition-shadow duration-300 ${onClick ? 'cursor-pointer hover:shadow-xl' : 'hover:shadow-xl'}`}
+      className={`relative overflow-hidden rounded-2xl p-6 shadow-lg transition-shadow duration-300 ${
+        theme === 'dark'
+          ? `${colors.lightBg} border ${colors.border}`
+          : 'bg-white border border-slate-200'
+      } ${onClick ? 'cursor-pointer hover:shadow-xl' : 'hover:shadow-xl'}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay }}
@@ -104,12 +109,18 @@ const MetricCard = ({
 
         {/* Content */}
         <div>
-          <h3 className="text-3xl font-bold text-secondary-900 mb-1">
+          <h3 className={`text-3xl font-bold mb-1 ${
+            theme === 'dark' ? 'text-secondary-900' : 'text-slate-900'
+          }`}>
             {typeof value === 'number' ? value.toLocaleString() : value}
           </h3>
-          <p className="text-sm font-medium text-secondary-700 mb-1">{title}</p>
+          <p className={`text-sm font-medium mb-1 ${
+            theme === 'dark' ? 'text-secondary-700' : 'text-slate-700'
+          }`}>{title}</p>
           {subtitle && (
-            <p className="text-xs text-secondary-500">{subtitle}</p>
+            <p className={`text-xs ${
+              theme === 'dark' ? 'text-secondary-500' : 'text-slate-500'
+            }`}>{subtitle}</p>
           )}
         </div>
 

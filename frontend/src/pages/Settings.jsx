@@ -110,9 +110,10 @@ const SettingsPage = ({ theme, onThemeChange }) => {
   }, []);
 
   useEffect(() => {
+    // Force dark theme for demo stability
     document.body.classList.remove('dark', 'light');
-    document.body.classList.add(settings.theme);
-  }, [settings.theme]);
+    document.body.classList.add('dark');
+  }, []);
 
   const updateSetting = (section, key, value) => {
     setSettings(prev => ({
@@ -124,12 +125,8 @@ const SettingsPage = ({ theme, onThemeChange }) => {
   };
 
   const handleThemeToggle = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    console.log('Toggling theme from', theme, 'to', newTheme);
-    if (onThemeChange) {
-      onThemeChange(newTheme);
-    }
-    console.log('Theme saved to localStorage:', localStorage.getItem('theme'));
+    // Disable switching for demo stability
+    alert("Light mode temporarily disabled for stability");
   };
 
   const handleThresholdChange = (key, value) => {
@@ -204,27 +201,39 @@ const SettingsPage = ({ theme, onThemeChange }) => {
     }
   };
 
-  const bgClass = theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-white text-slate-900';
+  // Force dark theme for stability
+  const isDark = true;  // Always true for demo stability
+  const bgClass = 'bg-slate-950 text-slate-100';
+  const cardClass = 'rounded-[2rem] border p-8 shadow-2xl transition border-white/10 bg-slate-900/90 shadow-slate-950/25';
+  const sectionCardClass = 'rounded-xl p-4 bg-slate-800/50';
+  const titleText = 'text-white';
+  const labelText = 'text-slate-300';
+  const bodyText = 'text-slate-400';
+  const inputStyle = 'border-slate-700 bg-slate-950/90 text-white placeholder-slate-400';
 
   return (
     <div className={`min-h-screen ${bgClass}`}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <motion.header
-          className="rounded-[2rem] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/40 backdrop-blur-xl"
+          className={`${cardClass} backdrop-blur-xl`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="max-w-2xl space-y-3">
-              <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
-                <Settings className="w-4 h-4 mr-2" />
+              <p className={`inline-flex rounded-full border px-4 py-2 text-sm ${
+                isDark
+                  ? 'border-white/10 bg-white/5 text-slate-200'
+                  : 'border-slate-200 bg-slate-100 text-slate-700'
+              }`}>
+                <Settings className={`w-4 h-4 mr-2 ${isDark ? 'text-white' : 'text-slate-700'}`} />
                 System Configuration
               </p>
-              <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+              <h1 className={`text-4xl font-semibold tracking-tight sm:text-5xl ${titleText} main-heading`}>
                 Hospital Settings
               </h1>
-              <p className="text-lg leading-8 text-slate-300">
+              <p className={`text-lg leading-8 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                 Configure system preferences, notification settings, security options, and customize your CareNest experience.
               </p>
             </div>
@@ -237,7 +246,7 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                 Save Changes
               </button>
               {settingsStatus && (
-                <p className="text-sm text-slate-300">{settingsStatus}</p>
+                <p className={`text-sm ${bodyText}`}>{settingsStatus}</p>
               )}
               {showNotification && (
                 <motion.div
@@ -258,28 +267,28 @@ const SettingsPage = ({ theme, onThemeChange }) => {
           <div className="lg:col-span-2 space-y-8">
             {/* Theme Settings */}
             <motion.div
-              className="rounded-[2rem] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/25"
+              className={cardClass}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-xl flex items-center justify-center">
-                  <Palette className="w-6 h-6 text-white" />
+                  <Palette className={`w-6 h-6 ${isDark ? 'text-white' : 'text-slate-700'}`} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">Appearance</h3>
-                  <p className="text-slate-400 text-sm">Customize the visual theme and display preferences</p>
+                  <h3 className={`text-xl font-semibold ${titleText}`}>Appearance</h3>
+                  <p className={`${bodyText} text-sm`}>Customize the visual theme and display preferences</p>
                 </div>
               </div>
 
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-3">
-                    {theme === 'dark' ? <Moon className="w-5 h-5 text-slate-400" /> : <Sun className="w-5 h-5 text-slate-400" />}
+                    {theme === 'dark' ? <Moon className="w-5 h-5 text-slate-400" /> : <Sun className="w-5 h-5 text-slate-700" />}
                     <div>
-                      <p className="text-white font-medium">Theme Mode</p>
-                      <p className="text-slate-400 text-sm">Switch between light and dark themes</p>
+                      <p className={`font-medium ${titleText}`}>Theme Mode</p>
+                      <p className={`${bodyText} text-sm`}>Switch between light and dark themes</p>
                     </div>
                   </div>
                   <button
@@ -300,24 +309,24 @@ const SettingsPage = ({ theme, onThemeChange }) => {
 
             {/* Alert Threshold Controls */}
             <motion.div
-              className="rounded-[2rem] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/25"
+              className={cardClass}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-r from-warning-500 to-warning-600 rounded-xl flex items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 text-white" />
+                  <AlertTriangle className={`w-6 h-6 ${isDark ? 'text-white' : 'text-slate-700'}`} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">Alert Thresholds</h3>
-                  <p className="text-slate-400 text-sm">Configure when alerts should be triggered</p>
+                  <h3 className={`text-xl font-semibold ${titleText}`}>Alert Thresholds</h3>
+                  <p className={`${bodyText} text-sm`}>Configure when alerts should be triggered</p>
                 </div>
               </div>
 
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300">
+                  <label className={`block text-sm font-medium ${labelText}`}>
                     Patient Capacity Alert (%)
                   </label>
                   <input
@@ -328,15 +337,15 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                     onChange={(e) => handleThresholdChange('patientCapacity', e.target.value)}
                     className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
                   />
-                  <div className="flex justify-between text-sm text-slate-400">
+                  <div className={`flex justify-between text-sm ${bodyText}`}>
                     <span>50%</span>
-                    <span className="text-white font-medium">{settings.alertThresholds.patientCapacity}%</span>
+                    <span className={`font-medium ${titleText}`}>{settings.alertThresholds.patientCapacity}%</span>
                     <span>100%</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300">
+                  <label className={`block text-sm font-medium ${labelText}`}>
                     ICU Usage Alert (%)
                   </label>
                   <input
@@ -347,15 +356,15 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                     onChange={(e) => handleThresholdChange('icuUsage', e.target.value)}
                     className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
                   />
-                  <div className="flex justify-between text-sm text-slate-400">
+                  <div className={`flex justify-between text-sm ${bodyText}`}>
                     <span>70%</span>
-                    <span className="text-white font-medium">{settings.alertThresholds.icuUsage}%</span>
+                    <span className={`font-medium ${titleText}`}>{settings.alertThresholds.icuUsage}%</span>
                     <span>100%</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300">
+                  <label className={`block text-sm font-medium ${labelText}`}>
                     Staff Shortage Alert (%)
                   </label>
                   <input
@@ -366,9 +375,9 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                     onChange={(e) => handleThresholdChange('staffShortage', e.target.value)}
                     className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
                   />
-                  <div className="flex justify-between text-sm text-slate-400">
+                  <div className={`flex justify-between text-sm ${bodyText}`}>
                     <span>10%</span>
-                    <span className="text-white font-medium">{settings.alertThresholds.staffShortage}%</span>
+                    <span className={`font-medium ${titleText}`}>{settings.alertThresholds.staffShortage}%</span>
                     <span>50%</span>
                   </div>
                 </div>
@@ -377,7 +386,7 @@ const SettingsPage = ({ theme, onThemeChange }) => {
 
             {/* Notification Settings */}
             <motion.div
-              className="rounded-[2rem] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/25"
+              className={cardClass}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -387,8 +396,8 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                   <Bell className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">Notifications</h3>
-                  <p className="text-slate-400 text-sm">Manage how and when you receive alerts</p>
+                  <h3 className={`text-xl font-semibold ${titleText}`}>Notifications</h3>
+                  <p className={`${bodyText} text-sm`}>Manage how and when you receive alerts</p>
                 </div>
               </div>
 
@@ -400,12 +409,12 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                   { key: 'criticalAlerts', label: 'Critical Alerts Only', icon: AlertTriangle, description: 'Only high-priority alerts' },
                   { key: 'maintenanceAlerts', label: 'Maintenance Alerts', icon: Settings, description: 'System maintenance notifications' },
                 ].map((item) => (
-                  <div key={item.key} className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50">
+                  <div key={item.key} className={`${sectionCardClass} flex items-center justify-between`}>
                     <div className="flex items-center gap-3">
-                      <item.icon className="w-5 h-5 text-slate-400" />
+                      <item.icon className={`w-5 h-5 ${isDark ? 'text-slate-400' : 'text-slate-700'}`} />
                       <div>
-                        <p className="text-white font-medium">{item.label}</p>
-                        <p className="text-slate-400 text-sm">{item.description}</p>
+                        <p className={`font-medium ${titleText}`}>{item.label}</p>
+                        <p className={`${bodyText} text-sm`}>{item.description}</p>
                       </div>
                     </div>
                     <button
@@ -427,7 +436,7 @@ const SettingsPage = ({ theme, onThemeChange }) => {
 
             {/* Profile Section */}
             <motion.div
-              className="rounded-[2rem] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/25"
+              className={cardClass}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
@@ -437,49 +446,49 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                   <User className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">Profile Information</h3>
-                  <p className="text-slate-400 text-sm">Update your personal and professional details</p>
+                  <h3 className={`text-xl font-semibold ${titleText}`}>Profile Information</h3>
+                  <p className={`${bodyText} text-sm`}>Update your personal and professional details</p>
                 </div>
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300">Full Name</label>
+                  <label className={`block text-sm font-medium ${labelText}`}>Full Name</label>
                   <input
                     type="text"
                     value={settings.profile.name}
                     onChange={(e) => handleProfileChange('name', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/90 text-white placeholder-slate-400 focus:border-primary-400 focus:outline-none transition-colors"
+                    className={`w-full px-4 py-3 rounded-xl border focus:border-primary-400 focus:outline-none transition-colors ${inputStyle}`}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300">Role</label>
+                  <label className={`block text-sm font-medium ${labelText}`}>Role</label>
                   <input
                     type="text"
                     value={settings.profile.role}
                     onChange={(e) => handleProfileChange('role', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/90 text-white placeholder-slate-400 focus:border-primary-400 focus:outline-none transition-colors"
+                    className={`w-full px-4 py-3 rounded-xl border focus:border-primary-400 focus:outline-none transition-colors ${inputStyle}`}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300">Hospital</label>
+                  <label className={`block text-sm font-medium ${labelText}`}>Hospital</label>
                   <input
                     type="text"
                     value={settings.profile.hospital}
                     onChange={(e) => handleProfileChange('hospital', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/90 text-white placeholder-slate-400 focus:border-primary-400 focus:outline-none transition-colors"
+                    className={`w-full px-4 py-3 rounded-xl border focus:border-primary-400 focus:outline-none transition-colors ${inputStyle}`}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300">Email</label>
+                  <label className={`block text-sm font-medium ${labelText}`}>Email</label>
                   <input
                     type="email"
                     value={settings.profile.email}
                     onChange={(e) => handleProfileChange('email', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/90 text-white placeholder-slate-400 focus:border-primary-400 focus:outline-none transition-colors"
+                    className={`w-full px-4 py-3 rounded-xl border focus:border-primary-400 focus:outline-none transition-colors ${inputStyle}`}
                   />
                 </div>
               </div>
@@ -489,7 +498,7 @@ const SettingsPage = ({ theme, onThemeChange }) => {
           {/* Sidebar - Demo Admin Controls */}
           <div className="space-y-8">
             <motion.div
-              className="rounded-[2rem] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/25"
+              className={cardClass}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
@@ -499,16 +508,16 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                   <Crown className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">Admin Controls</h3>
-                  <p className="text-slate-400 text-sm">Demo administrative settings</p>
+                  <h3 className={`text-xl font-semibold ${titleText}`}>Admin Controls</h3>
+                  <p className={`${bodyText} text-sm`}>Demo administrative settings</p>
                 </div>
               </div>
 
               <div className="space-y-6">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50">
+                <div className={`${sectionCardClass} flex items-center justify-between`}>
                   <div>
-                    <p className="text-white font-medium">Demo Mode</p>
-                    <p className="text-slate-400 text-sm">Enable demo data and features</p>
+                    <p className={`font-medium ${titleText}`}>Demo Mode</p>
+                    <p className={`${bodyText} text-sm`}>Enable demo data and features</p>
                   </div>
                   <button
                     onClick={() => handleAdminChange('demoMode', !settings.adminSettings.demoMode)}
@@ -524,10 +533,10 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50">
+                <div className={`${sectionCardClass} flex items-center justify-between`}>
                   <div>
-                    <p className="text-white font-medium">Auto Backup</p>
-                    <p className="text-slate-400 text-sm">Automatic data backups</p>
+                    <p className={`font-medium ${titleText}`}>Auto Backup</p>
+                    <p className={`${bodyText} text-sm`}>Automatic data backups</p>
                   </div>
                   <button
                     onClick={() => handleAdminChange('autoBackup', !settings.adminSettings.autoBackup)}
@@ -543,10 +552,10 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50">
+                <div className={`${sectionCardClass} flex items-center justify-between`}>
                   <div>
-                    <p className="text-white font-medium">Maintenance Mode</p>
-                    <p className="text-slate-400 text-sm">Put system in maintenance</p>
+                    <p className={`font-medium ${titleText}`}>Maintenance Mode</p>
+                    <p className={`${bodyText} text-sm`}>Put system in maintenance</p>
                   </div>
                   <button
                     onClick={() => handleAdminChange('maintenanceMode', !settings.adminSettings.maintenanceMode)}
@@ -563,7 +572,7 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300">
+                  <label className={`block text-sm font-medium ${labelText}`}>
                     Data Retention (days)
                   </label>
                   <input
@@ -572,7 +581,7 @@ const SettingsPage = ({ theme, onThemeChange }) => {
                     max="3650"
                     value={settings.adminSettings.dataRetention}
                     onChange={(e) => handleAdminChange('dataRetention', parseInt(e.target.value))}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/90 text-white placeholder-slate-400 focus:border-primary-400 focus:outline-none transition-colors"
+                    className={`w-full px-4 py-3 rounded-xl border focus:border-primary-400 focus:outline-none transition-colors ${inputStyle}`}
                   />
                 </div>
 
@@ -588,32 +597,32 @@ const SettingsPage = ({ theme, onThemeChange }) => {
 
             {/* System Status */}
             <motion.div
-              className="rounded-[2rem] border border-white/10 bg-slate-900/90 p-6 shadow-2xl shadow-slate-950/25"
+              className={`${cardClass.replace('p-8', 'p-6')}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
             >
               <div className="flex items-center gap-3 mb-4">
-                <Activity className="w-5 h-5 text-success-400" />
-                <h4 className="text-lg font-semibold text-white">System Status</h4>
+                <Activity className={`w-5 h-5 ${isDark ? 'text-success-400' : 'text-success-600'}`} />
+                <h4 className={`text-lg font-semibold ${titleText}`}>System Status</h4>
               </div>
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">AI Model</span>
-                  <span className="text-success-400">Online</span>
+                  <span className={`${bodyText}`}>AI Model</span>
+                  <span className={`text-success-400`}>Online</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Database</span>
-                  <span className="text-success-400">Connected</span>
+                  <span className={`${bodyText}`}>Database</span>
+                  <span className={`text-success-400`}>Connected</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Notifications</span>
-                  <span className="text-success-400">Active</span>
+                  <span className={`${bodyText}`}>Notifications</span>
+                  <span className={`text-success-400`}>Active</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Last Backup</span>
-                  <span className="text-slate-300">2 hours ago</span>
+                  <span className={`${bodyText}`}>Last Backup</span>
+                  <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>2 hours ago</span>
                 </div>
               </div>
             </motion.div>

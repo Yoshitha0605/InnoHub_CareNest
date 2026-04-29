@@ -293,24 +293,26 @@ def alerts(occupancy_rate: Optional[float] = None, patient_count: Optional[int] 
 
 
 @app.get("/generate-report")
-def generate_report(report_type: Optional[str] = "summary"):
-    status = DEMO_DATA["warning"]
-    return {
-        "report_type": report_type,
-        "generated_at": datetime.utcnow().isoformat() + "Z",
-        "hospital_name": "Metro General Hospital",
-        "hospital_region": "Central City",
-        "summary": {
-            "current_patients": status["current_patients"],
-            "beds_available": status["beds_available"],
-            "icu_available": status["icu_available"],
-            "occupancy_rate": status["occupancy_rate"],
-            "alert_level": status["alert_level"],
-        },
-        "recommended_action": status["recommended_action"],
-        "prediction": status["prediction"],
-        "confidence": status["confidence"],
-    }
+def generate_report(type: str = "any"):
+
+    try:
+        return {
+            "title": f"{type.capitalize()} Report",
+            "hospital": "CareNest Demo Hospital",
+            "patients": 120,
+            "beds": 80,
+            "icu": 25,
+            "status": "Stable"
+        }
+
+    except Exception as e:
+        return {
+            "title": "Fallback Report",
+            "hospital": "Demo Hospital",
+            "patients": 100,
+            "status": "Working"
+        }
+
 
 # Controlled demo data
 DEMO_DATA = {

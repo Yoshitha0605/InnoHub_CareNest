@@ -8,11 +8,13 @@ body.dark {
   transition: background-color 200ms ease, color 200ms ease;
 }
 
+/* Force stable dark theme - remove light mode */
 body.light {
-  background-color: #ffffff;
-  color: #111111;
-  transition: background-color 200ms ease, color 200ms ease;
+  background-color: #0b1220 !important;
+  color: #ffffff !important;
 }
+
+/* Remove all light mode text fixes - force dark theme stability */
 
 /* Theme-aware component classes */
 .card {
